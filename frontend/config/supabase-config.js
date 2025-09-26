@@ -29,7 +29,7 @@ function getSupabaseClient() {
 const API_CONFIG = {
     baseUrl: window.location.hostname === 'localhost'
         ? 'http://localhost:3000'
-        : 'https://cisnet-backend.vercel.app',
+        : window.location.origin,
     endpoints: {
         auth: {
             login: '/api/auth/login',

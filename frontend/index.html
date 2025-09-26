@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CISNET - Sistema de Venta de Software</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/modern-home.css">
+    <link rel="stylesheet" href="assets/css/payment-config.css">
+    <link rel="stylesheet" href="assets/css/checkout.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <nav class="navbar">
+                <div class="nav-brand">
+                    <h1>CISNET</h1>
+                </div>
+                <div class="nav-menu">
+                    <a href="#" id="home-link">Inicio</a>
+                    <a href="#" id="products-link">Productos</a>
+                    <a href="#" id="services-link">Servicios</a>
+                    <a href="#" id="cart-link">Carrito</a>
+                    <a href="#" id="about-link">Quiénes Somos</a>
+                    <a href="#" id="asociados-link">Asociados</a>
+                    <a href="#" id="soporte-link">Soporte</a>
+                    <a href="#" id="payment-config-link">💳 Pagos</a>
+                    <a href="#" id="login-link">Iniciar Sesión</a>
+                </div>
+            </nav>
+        </header>
+
+        <main id="main-content">
+            <!-- El contenido se cargará dinámicamente aquí -->
+        </main>
+
+        <footer>
+            <p>&copy; 2024 CISNET. Todos los derechos reservados.</p>
+        </footer>
+    </div>
+
+
+    <!-- Scripts -->
+    <script src="config/media-config.js?v=8"></script>
+    <script src="models/User.js?v=8"></script>
+    <script src="models/Product.js?v=3"></script>
+    <script src="models/Cart.js?v=3"></script>
+    <script src="controllers/AuthController.js?v=7"></script>
+    <script src="controllers/ProductController.js?v=20"></script>
+    <script src="controllers/CartController.js?v=4"></script>
+    <script src="controllers/PaymentConfigController.js?v=1"></script>
+    <script src="controllers/PaymentProcessorController.js?v=1"></script>
+    <script src="controllers/ViewManager.js?v=11"></script>
+    <script src="assets/js/modern-carousel.js?v=1"></script>
+    <script src="assets/js/app.js?v=6"></script>
+    <script src="config/google-auth-config.js?v=6"></script>
+</body>
+</html>
+

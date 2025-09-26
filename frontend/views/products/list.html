@@ -1,0 +1,103 @@
+<div class="products-container">
+    <!-- Modern Header with Search -->
+    <div class="products-hero">
+        <div class="container">
+            <h1 class="products-title">🛍️ Catálogo de Software</h1>
+            <p class="products-subtitle">Descubre las mejores herramientas para tu trabajo</p>
+            
+            <!-- Modern Search Bar -->
+            <div class="modern-search-container">
+                <div class="search-input-wrapper">
+                    <input type="text" id="search-input" placeholder="Buscar productos, categorías o desarrolladores..." class="modern-search-input">
+                    <button id="search-btn" class="search-btn">
+                        <span>🔍</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modern Filters Section -->
+    <div class="modern-filters-section">
+        <div class="container">
+            <div class="filters-header">
+                <h3>🎯 Filtrar Productos</h3>
+                <button id="clear-filters" class="clear-filters-btn">Limpiar Filtros</button>
+            </div>
+            
+            <div class="modern-filters">
+                <div class="filter-group">
+                    <label class="filter-label">📂 Categoría</label>
+                    <div class="custom-select">
+                        <select id="category-filter">
+                            <option value="">Todas las categorías</option>
+                            <option value="desarrollo">💻 Desarrollo</option>
+                            <option value="productividad">📊 Productividad</option>
+                            <option value="creatividad">🎨 Creatividad</option>
+                            <option value="seguridad">🛡️ Seguridad</option>
+                            <option value="utilidades">⚙️ Utilidades</option>
+                            <option value="gaming">🎮 Gaming</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">💰 Rango de Precio</label>
+                    <div class="custom-select">
+                        <select id="price-filter">
+                            <option value="">Todos los precios</option>
+                            <option value="0-50">$0 - $50</option>
+                            <option value="51-100">$51 - $100</option>
+                            <option value="101-200">$101 - $200</option>
+                            <option value="201+">$201+</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">⭐ Calificación</label>
+                    <div class="custom-select">
+                        <select id="rating-filter">
+                            <option value="">Todas las calificaciones</option>
+                            <option value="5">⭐⭐⭐⭐⭐ 5 estrellas</option>
+                            <option value="4">⭐⭐⭐⭐ 4+ estrellas</option>
+                            <option value="3">⭐⭐⭐ 3+ estrellas</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">📈 Ordenar por</label>
+                    <div class="custom-select">
+                        <select id="sort-filter">
+                            <option value="popular">🔥 Más Popular</option>
+                            <option value="rating">⭐ Mejor Calificados</option>
+                            <option value="downloads">📥 Más Descargados</option>
+                            <option value="price-asc">💰 Precio: Menor a Mayor</option>
+                            <option value="price-desc">💸 Precio: Mayor a Menor</option>
+                            <option value="newest">🆕 Más Recientes</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filter Tags -->
+            <div id="active-filters" class="active-filters" style="display: none;">
+                <span class="filters-label">Filtros activos:</span>
+                <div id="filter-tags" class="filter-tags"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="products-grid" class="products-grid">
+        <!-- Los productos se cargarán dinámicamente aquí -->
+    </div>
+    
+    <div id="loading" class="loading" style="display: none;">
+        <p>Cargando productos...</p>
+    </div>
+    
+    <div id="no-products" class="no-products" style="display: none;">
+        <p>No se encontraron productos.</p>
+    </div>
+</div>

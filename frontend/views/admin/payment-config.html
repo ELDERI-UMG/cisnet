@@ -1,0 +1,445 @@
+<div class="payment-config-container">
+    <!-- Header Section -->
+    <div class="config-hero">
+        <div class="container">
+            <h1>💳 Configuración de Pasarelas de Pago</h1>
+            <p class="subtitle">Conecta tu tienda con procesadores de pago confiables</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Payment Gateway Selection -->
+        <div class="payment-gateways-section">
+            <h2>🔗 Pasarelas de Pago Disponibles</h2>
+            <div class="gateways-grid">
+                <!-- Stripe Gateway -->
+                <div class="gateway-card stripe-card" id="stripe-gateway">
+                    <div class="gateway-header">
+                        <div class="gateway-logo">
+                            <img src="https://stripe.com/img/v3/home/twitter.png" alt="Stripe" style="width: 60px; height: auto;">
+                        </div>
+                        <div class="gateway-info">
+                            <h3>Stripe</h3>
+                            <p>Procesador de pagos global con tarjetas de crédito/débito</p>
+                            <div class="gateway-status" id="stripe-status">
+                                <span class="status-indicator inactive"></span>
+                                <span class="status-text">Desconectado</span>
+                            </div>
+                        </div>
+                        <div class="gateway-toggle">
+                            <input type="checkbox" id="stripe-enabled" class="toggle-switch">
+                            <label for="stripe-enabled" class="toggle-label"></label>
+                        </div>
+                    </div>
+                    
+                    <div class="gateway-config" id="stripe-config" style="display: none;">
+                        <form class="payment-form" id="stripe-form">
+                            <h4>🔑 Configuración de Stripe</h4>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Clave Pública (Publishable Key)</label>
+                                    <input type="text" name="stripe_publishable_key" placeholder="pk_test_..." required>
+                                    <small>Clave pública para el frontend (seguro mostrar)</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>Clave Secreta (Secret Key)</label>
+                                    <input type="password" name="stripe_secret_key" placeholder="sk_test_..." required>
+                                    <small>Clave privada para el backend (mantener segura)</small>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Webhook Secret</label>
+                                    <input type="password" name="stripe_webhook_secret" placeholder="whsec_...">
+                                    <small>Para verificar webhooks de Stripe (opcional)</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>Modo</label>
+                                    <select name="stripe_mode" required>
+                                        <option value="test">🧪 Modo Prueba</option>
+                                        <option value="live">🔴 Modo Producción</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Monedas Aceptadas</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="stripe_currencies[]" value="USD" checked>
+                                        <span class="checkmark"></span>
+                                        USD - Dólar Estadounidense
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="stripe_currencies[]" value="GTQ">
+                                        <span class="checkmark"></span>
+                                        GTQ - Quetzal Guatemalteco
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="stripe_currencies[]" value="EUR">
+                                        <span class="checkmark"></span>
+                                        EUR - Euro
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="testStripeConnection()">
+                                    🧪 Probar Conexión
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    💾 Guardar Configuración
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- PayPal Gateway -->
+                <div class="gateway-card paypal-card" id="paypal-gateway">
+                    <div class="gateway-header">
+                        <div class="gateway-logo">
+                            <div style="background: #0070ba; color: white; padding: 8px 12px; border-radius: 4px; font-weight: bold; font-size: 14px;">PayPal</div>
+                        </div>
+                        <div class="gateway-info">
+                            <h3>PayPal</h3>
+                            <p>Plataforma de pagos digital reconocida mundialmente</p>
+                            <div class="gateway-status" id="paypal-status">
+                                <span class="status-indicator inactive"></span>
+                                <span class="status-text">Desconectado</span>
+                            </div>
+                        </div>
+                        <div class="gateway-toggle">
+                            <input type="checkbox" id="paypal-enabled" class="toggle-switch">
+                            <label for="paypal-enabled" class="toggle-label"></label>
+                        </div>
+                    </div>
+                    
+                    <div class="gateway-config" id="paypal-config" style="display: none;">
+                        <form class="payment-form" id="paypal-form">
+                            <h4>💙 Configuración de PayPal</h4>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Client ID</label>
+                                    <input type="text" name="paypal_client_id" placeholder="AY..." required>
+                                    <small>ID del cliente de tu aplicación PayPal</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>Client Secret</label>
+                                    <input type="password" name="paypal_client_secret" placeholder="EP..." required>
+                                    <small>Secreto del cliente (mantener privado)</small>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Webhook ID</label>
+                                    <input type="text" name="paypal_webhook_id" placeholder="WH-...">
+                                    <small>ID del webhook para notificaciones</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>Ambiente</label>
+                                    <select name="paypal_environment" required>
+                                        <option value="sandbox">🏖️ Sandbox (Pruebas)</option>
+                                        <option value="live">🌐 Producción</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Configuración Adicional</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="paypal_express_checkout" checked>
+                                        <span class="checkmark"></span>
+                                        PayPal Express Checkout
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="paypal_credit">
+                                        <span class="checkmark"></span>
+                                        PayPal Credit (Solo US)
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="paypal_venmo">
+                                        <span class="checkmark"></span>
+                                        Venmo (Solo US)
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="testPayPalConnection()">
+                                    🧪 Probar Conexión
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    💾 Guardar Configuración
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Neonet Guatemala Gateway -->
+                <div class="gateway-card neonet-card" id="neonet-gateway">
+                    <div class="gateway-header">
+                        <div class="gateway-logo">
+                            <div style="background: #e74c3c; color: white; padding: 8px 12px; border-radius: 4px; font-weight: bold; font-size: 14px;">🇬🇹 Neonet</div>
+                        </div>
+                        <div class="gateway-info">
+                            <h3>Neonet Guatemala</h3>
+                            <p>Procesador de pagos local para Guatemala</p>
+                            <div class="gateway-status" id="neonet-status">
+                                <span class="status-indicator inactive"></span>
+                                <span class="status-text">Desconectado</span>
+                            </div>
+                        </div>
+                        <div class="gateway-toggle">
+                            <input type="checkbox" id="neonet-enabled" class="toggle-switch">
+                            <label for="neonet-enabled" class="toggle-label"></label>
+                        </div>
+                    </div>
+                    
+                    <div class="gateway-config" id="neonet-config" style="display: none;">
+                        <form class="payment-form" id="neonet-form">
+                            <h4>🇬🇹 Configuración de Neonet Guatemala</h4>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Merchant ID</label>
+                                    <input type="text" name="neonet_merchant_id" placeholder="MERCHANT_ID" required>
+                                    <small>ID de comercio asignado por Neonet</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>Terminal ID</label>
+                                    <input type="text" name="neonet_terminal_id" placeholder="TERMINAL_ID" required>
+                                    <small>ID de terminal proporcionado por Neonet</small>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>API Key</label>
+                                    <input type="password" name="neonet_api_key" placeholder="API_KEY" required>
+                                    <small>Clave API secreta de Neonet</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>Ambiente</label>
+                                    <select name="neonet_environment" required>
+                                        <option value="test">🧪 Ambiente de Pruebas</option>
+                                        <option value="production">🏢 Producción</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>URL de Retorno Éxito</label>
+                                    <input type="url" name="neonet_success_url" placeholder="https://tutienda.com/pago-exitoso">
+                                    <small>URL donde redirigir tras pago exitoso</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>URL de Retorno Error</label>
+                                    <input type="url" name="neonet_error_url" placeholder="https://tutienda.com/pago-fallido">
+                                    <small>URL donde redirigir tras pago fallido</small>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Bancos Soportados en Guatemala</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="neonet_banks[]" value="BAM" checked>
+                                        <span class="checkmark"></span>
+                                        Banco Agromercantil
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="neonet_banks[]" value="BANRURAL" checked>
+                                        <span class="checkmark"></span>
+                                        Banrural
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="neonet_banks[]" value="BAC" checked>
+                                        <span class="checkmark"></span>
+                                        BAC Credomatic
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="neonet_banks[]" value="GT" checked>
+                                        <span class="checkmark"></span>
+                                        Banco G&T Continental
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="neonet_banks[]" value="PROMERICA">
+                                        <span class="checkmark"></span>
+                                        Banco Promerica
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="testNeonetConnection()">
+                                    🧪 Probar Conexión
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    💾 Guardar Configuración
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Processing Settings -->
+        <div class="payment-settings-section">
+            <h2>⚙️ Configuración General de Pagos</h2>
+            
+            <form class="general-settings-form" id="general-payment-settings">
+                <div class="settings-grid">
+                    <div class="setting-group">
+                        <h4>🌍 Configuración Regional</h4>
+                        
+                        <div class="form-group">
+                            <label>Moneda Principal</label>
+                            <select name="primary_currency" required>
+                                <option value="GTQ">GTQ - Quetzal Guatemalteco</option>
+                                <option value="USD">USD - Dólar Estadounidense</option>
+                                <option value="EUR">EUR - Euro</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>País de Operación</label>
+                            <select name="country" required>
+                                <option value="GT">🇬🇹 Guatemala</option>
+                                <option value="US">🇺🇸 Estados Unidos</option>
+                                <option value="MX">🇲🇽 México</option>
+                                <option value="ES">🇪🇸 España</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Zona Horaria</label>
+                            <select name="timezone" required>
+                                <option value="America/Guatemala">Guatemala (GMT-6)</option>
+                                <option value="America/New_York">Eastern Time (GMT-5)</option>
+                                <option value="America/Mexico_City">México Central (GMT-6)</option>
+                                <option value="Europe/Madrid">España (GMT+1)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <h4>💰 Configuración de Comisiones</h4>
+                        
+                        <div class="form-group">
+                            <label>Comisión Fija por Transacción</label>
+                            <input type="number" name="fixed_fee" step="0.01" min="0" placeholder="0.50">
+                            <small>Comisión fija en la moneda principal</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Comisión Porcentual (%)</label>
+                            <input type="number" name="percentage_fee" step="0.1" min="0" max="10" placeholder="2.9">
+                            <small>Porcentaje adicional sobre el total</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Monto Mínimo de Transacción</label>
+                            <input type="number" name="min_amount" step="0.01" min="0" placeholder="1.00">
+                            <small>Monto mínimo permitido para procesar</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Monto Máximo de Transacción</label>
+                            <input type="number" name="max_amount" step="0.01" min="0" placeholder="10000.00">
+                            <small>Monto máximo permitido por transacción</small>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <h4>📧 Notificaciones</h4>
+                        
+                        <div class="form-group">
+                            <label>Email para Notificaciones de Pago</label>
+                            <input type="email" name="notification_email" placeholder="pagos@tutienda.com" required>
+                            <small>Email donde recibir notificaciones de transacciones</small>
+                        </div>
+                        
+                        <div class="checkbox-group">
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="notify_successful_payments" checked>
+                                <span class="checkmark"></span>
+                                Notificar pagos exitosos
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="notify_failed_payments" checked>
+                                <span class="checkmark"></span>
+                                Notificar pagos fallidos
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="notify_refunds" checked>
+                                <span class="checkmark"></span>
+                                Notificar reembolsos
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="notify_chargebacks">
+                                <span class="checkmark"></span>
+                                Notificar contracargos
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions center">
+                    <button type="button" class="btn btn-secondary" onclick="validateAllSettings()">
+                        🔍 Validar Configuración
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-large">
+                        💾 Guardar Configuración General
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Test Payments Section -->
+        <div class="test-payments-section">
+            <h2>🧪 Pruebas de Pago</h2>
+            <p>Realiza pagos de prueba para verificar que las integraciones funcionen correctamente</p>
+            
+            <div class="test-payment-card">
+                <h4>💳 Simular Transacción de Prueba</h4>
+                
+                <form class="test-payment-form" id="test-payment-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Pasarela de Pago</label>
+                            <select name="test_gateway" required>
+                                <option value="">Seleccionar pasarela...</option>
+                                <option value="stripe">Stripe</option>
+                                <option value="paypal">PayPal</option>
+                                <option value="neonet">Neonet Guatemala</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Monto de Prueba</label>
+                            <input type="number" name="test_amount" step="0.01" min="1" placeholder="10.00" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            🚀 Ejecutar Prueba de Pago
+                        </button>
+                    </div>
+                </form>
+                
+                <div id="test-results" class="test-results" style="display: none;">
+                    <!-- Los resultados de las pruebas aparecerán aquí -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

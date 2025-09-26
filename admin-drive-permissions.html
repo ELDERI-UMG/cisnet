@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrar Permisos de Google Drive - CISNET</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .permissions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .permissions-table th,
+        .permissions-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .permissions-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .permissions-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #2980b9;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .status-pending {
+            color: #856404;
+            background: #fff3cd;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .status-granted {
+            color: #155724;
+            background: #d4edda;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .grant-form {
+            background: #e7f1ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            display: none;
+        }
+        .grant-form input {
+            width: 200px;
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .actions {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Administrador de Permisos de Google Drive</h1>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalPending">-</div>
+                <div>Permisos Pendientes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalGranted">-</div>
+                <div>Permisos Otorgados</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn" onclick="loadPermissions()">🔄 Actualizar</button>
+            <button class="btn btn-success" onclick="toggleBulkGrant()">📝 Otorgar Permisos en Lote</button>
+        </div>
+
+        <!-- Formulario para otorgar permisos en lote -->
+        <div class="grant-form" id="bulkGrantForm">
+            <h3>Otorgar Permisos en Lote</h3>
+            <div>
+                <input type="email" id="bulkEmail" placeholder="Email del usuario" required>
+                <input type="number" id="bulkProductId" placeholder="ID del producto" required>
+                <input type="text" id="bulkDriveFileId" placeholder="ID del archivo en Drive (opcional)">
+                <button class="btn btn-success" onclick="grantBulkPermission()">Otorgar Permiso</button>
+                <button class="btn" onclick="toggleBulkGrant()">Cancelar</button>
+            </div>
+        </div>
+
+        <div id="result"></div>
+
+        <div id="loading" class="loading">
+            <div>⏳ Cargando permisos...</div>
+        </div>
+
+        <table class="permissions-table" id="permissionsTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Email</th>
+                    <th>Producto</th>
+                    <th>Estado</th>
+                    <th>Fecha Solicitud</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="permissionsBody">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Load permissions on page load
+        document.addEventListener('DOMContentLoaded', loadPermissions);
+
+        async function loadPermissions() {
+            const loading = document.getElementById('loading');
+            const table = document.getElementById('permissionsTable');
+            const result = document.getElementById('result');
+
+            loading.style.display = 'block';
+            table.style.display = 'none';
+            result.innerHTML = '';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/purchases/pending-permissions');
+                const data = await response.json();
+
+                if (data.success) {
+                    displayPermissions(data.data);
+                    updateStats(data.data);
+                } else {
+                    showMessage(data.error || 'Error al cargar permisos', 'error');
+                }
+            } catch (error) {
+                showMessage('Error de conexión: ' + error.message, 'error');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function displayPermissions(permissions) {
+            const table = document.getElementById('permissionsTable');
+            const tbody = document.getElementById('permissionsBody');
+
+            tbody.innerHTML = '';
+
+            if (permissions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">No hay permisos pendientes</td></tr>';
+            } else {
+                permissions.forEach(permission => {
+                    const row = document.createElement('tr');
+                    const statusClass = permission.permission_granted ? 'status-granted' : 'status-pending';
+                    const statusText = permission.permission_granted ? 'Otorgado' : 'Pendiente';
+
+                    row.innerHTML = `
+                        <td>${permission.id}</td>
+                        <td>${permission.user_name}</td>
+                        <td>${permission.user_email}</td>
+                        <td>${permission.product_name} (ID: ${permission.product_id})</td>
+                        <td><span class="${statusClass}">${statusText}</span></td>
+                        <td>${new Date(permission.created_at).toLocaleString()}</td>
+                        <td>
+                            <button class="btn btn-success" onclick="grantPermission('${permission.user_email}', ${permission.product_id})">
+                                ✅ Otorgar
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            table.style.display = 'table';
+        }
+
+        function updateStats(permissions) {
+            const totalPending = permissions.filter(p => !p.permission_granted).length;
+            const totalGranted = permissions.filter(p => p.permission_granted).length;
+
+            document.getElementById('totalPending').textContent = totalPending;
+            document.getElementById('totalGranted').textContent = totalGranted;
+        }
+
+        async function grantPermission(userEmail, productId) {
+            const driveFileId = prompt('Ingresa el ID del archivo en Google Drive (opcional):');
+
+            try {
+                const response = await fetch('http://localhost:3000/api/purchases/grant-drive-permission', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userEmail: userEmail,
+                        productId: productId,
+                        driveFileId: driveFileId || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    loadPermissions(); // Reload the table
+                } else {
+                    showMessage(data.error || 'Error al otorgar permiso', 'error');
+                }
+            } catch (error) {
+                showMessage('Error de conexión: ' + error.message, 'error');
+            }
+        }
+
+        function toggleBulkGrant() {
+            const form = document.getElementById('bulkGrantForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function grantBulkPermission() {
+            const email = document.getElementById('bulkEmail').value;
+            const productId = document.getElementById('bulkProductId').value;
+            const driveFileId = document.getElementById('bulkDriveFileId').value;
+
+            if (!email || !productId) {
+                showMessage('Email y ID del producto son requeridos', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/purchases/grant-drive-permission', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userEmail: email,
+                        productId: parseInt(productId),
+                        driveFileId: driveFileId || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    document.getElementById('bulkEmail').value = '';
+                    document.getElementById('bulkProductId').value = '';
+                    document.getElementById('bulkDriveFileId').value = '';
+                    toggleBulkGrant();
+                    loadPermissions();
+                } else {
+                    showMessage(data.error || 'Error al otorgar permiso', 'error');
+                }
+            } catch (error) {
+                showMessage('Error de conexión: ' + error.message, 'error');
+            }
+        }
+
+        function showMessage(message, type) {
+            const result = document.getElementById('result');
+            result.innerHTML = `<div class="${type}">${message}</div>`;
+
+            setTimeout(() => {
+                result.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

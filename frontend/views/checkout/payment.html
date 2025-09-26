@@ -1,0 +1,461 @@
+<div class="checkout-container">
+    <!-- Checkout Header -->
+    <div class="checkout-hero">
+        <div class="container">
+            <h1>🔐 Checkout Seguro</h1>
+            <p class="subtitle">Completa tu compra de forma rápida y segura</p>
+            
+            <!-- Progress Steps -->
+            <div class="checkout-progress">
+                <div class="progress-step completed">
+                    <div class="step-circle">✓</div>
+                    <span class="step-label">Carrito</span>
+                </div>
+                <div class="progress-step active">
+                    <div class="step-circle">2</div>
+                    <span class="step-label">Pago</span>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle">3</div>
+                    <span class="step-label">Confirmación</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="checkout-grid">
+            <!-- Order Summary -->
+            <div class="order-summary-section">
+                <div class="order-summary-card">
+                    <h3>📋 Resumen de Pedido</h3>
+                    <div class="order-items" id="checkout-order-items">
+                        <!-- Items will be loaded dynamically -->
+                    </div>
+                    
+                    <div class="order-totals">
+                        <div class="total-line">
+                            <span>Subtotal:</span>
+                            <span id="checkout-subtotal">$0.00</span>
+                        </div>
+                        <div class="total-line">
+                            <span>Impuestos:</span>
+                            <span id="checkout-taxes">$0.00</span>
+                        </div>
+                        <div class="total-line total-final">
+                            <span>Total:</span>
+                            <span id="checkout-total">$0.00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="security-badges">
+                        <div class="security-badge">
+                            <span class="security-icon">🔒</span>
+                            <span>Pago 100% Seguro</span>
+                        </div>
+                        <div class="security-badge">
+                            <span class="security-icon">🛡️</span>
+                            <span>SSL Encriptado</span>
+                        </div>
+                        <div class="security-badge">
+                            <span class="security-icon">✅</span>
+                            <span>Compra Protegida</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Section -->
+            <div class="payment-section">
+                <div class="payment-card">
+                    <h3>💳 Selecciona tu Método de Pago</h3>
+                    
+                    <!-- Payment Methods -->
+                    <div id="payment-methods-container">
+                        <!-- Payment methods will be loaded dynamically by PaymentProcessorController -->
+                    </div>
+                    
+                    <!-- Payment Forms Container -->
+                    <div id="payment-forms-container">
+                        <!-- Gateway-specific forms will appear here -->
+                    </div>
+                    
+                    <!-- Checkout Actions -->
+                    <div class="checkout-actions" id="checkout-actions" style="display: none;">
+                        <button type="button" class="btn btn-secondary" onclick="window.viewManager.loadView('cart/cart')">
+                            ⬅️ Volver al Carrito
+                        </button>
+                        <button type="button" class="btn btn-primary btn-large" id="process-payment-btn" onclick="processCheckoutPayment()">
+                            🔐 Procesar Pago
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Trust Indicators -->
+        <div class="trust-indicators">
+            <div class="trust-item">
+                <div class="trust-icon">🔐</div>
+                <h4>Transacciones Seguras</h4>
+                <p>Todos los pagos están protegidos con encriptación SSL de 256 bits</p>
+            </div>
+            <div class="trust-item">
+                <div class="trust-icon">⚡</div>
+                <h4>Procesamiento Instantáneo</h4>
+                <p>Acceso inmediato a tus productos después del pago exitoso</p>
+            </div>
+            <div class="trust-item">
+                <div class="trust-icon">🎧</div>
+                <h4>Soporte 24/7</h4>
+                <p>Nuestro equipo está disponible para ayudarte en cualquier momento</p>
+            </div>
+            <div class="trust-item">
+                <div class="trust-icon">🏆</div>
+                <h4>Garantía de Satisfacción</h4>
+                <p>100% de garantía en todos nuestros productos de software</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Processing Modal -->
+    <div id="payment-processing-modal" class="payment-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="processing-animation">
+                <div class="spinner"></div>
+                <h3>🔄 Procesando Pago...</h3>
+                <p>Por favor espera mientras procesamos tu transacción de forma segura</p>
+                <div class="processing-steps">
+                    <div class="processing-step active">
+                        <span class="step-icon">🔒</span>
+                        <span>Verificando datos</span>
+                    </div>
+                    <div class="processing-step">
+                        <span class="step-icon">💳</span>
+                        <span>Contactando banco</span>
+                    </div>
+                    <div class="processing-step">
+                        <span class="step-icon">✅</span>
+                        <span>Confirmando pago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Success Modal -->
+    <div id="payment-success-modal" class="payment-modal" style="display: none;">
+        <div class="modal-content success">
+            <div class="success-animation">
+                <div class="checkmark-circle">
+                    <div class="checkmark"></div>
+                </div>
+                <h3>🎉 ¡Pago Exitoso!</h3>
+                <p>Tu transacción ha sido procesada correctamente</p>
+                
+                <div class="transaction-details" id="transaction-details">
+                    <!-- Transaction details will be populated here -->
+                </div>
+                
+                <div class="success-actions">
+                    <button class="btn btn-primary btn-large" onclick="goToProducts()">
+                        🎁 Ver Mis Productos
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadReceipt()">
+                        📄 Descargar Recibo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Error Modal -->
+    <div id="payment-error-modal" class="payment-modal" style="display: none;">
+        <div class="modal-content error">
+            <div class="error-animation">
+                <div class="error-circle">
+                    <div class="error-x"></div>
+                </div>
+                <h3>❌ Error en el Pago</h3>
+                <p id="error-message">Ha ocurrido un error procesando tu pago</p>
+                
+                <div class="error-actions">
+                    <button class="btn btn-primary" onclick="retryPayment()">
+                        🔄 Intentar Nuevamente
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeErrorModal()">
+                        ❌ Cancelar
+                    </button>
+                </div>
+                
+                <div class="support-info">
+                    <p>¿Necesitas ayuda? <a href="#" onclick="window.viewManager.loadView('soporte/index')">Contacta Soporte</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Checkout page specific functions
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCheckout();
+});
+
+function initializeCheckout() {
+    console.log('🛒 Initializing checkout page');
+    
+    // Load order summary
+    loadOrderSummary();
+    
+    // Load payment methods
+    loadPaymentMethods();
+    
+    // Setup form formatting
+    if (window.paymentProcessor) {
+        window.paymentProcessor.setupFormFormatting();
+    }
+}
+
+function loadOrderSummary() {
+    if (!window.cartController) {
+        console.error('❌ CartController not available');
+        return;
+    }
+    
+    const cart = window.cartController.getCart();
+    const itemsContainer = document.getElementById('checkout-order-items');
+    const subtotalEl = document.getElementById('checkout-subtotal');
+    const taxesEl = document.getElementById('checkout-taxes');
+    const totalEl = document.getElementById('checkout-total');
+    
+    if (!cart || !cart.items || cart.items.length === 0) {
+        itemsContainer.innerHTML = '<p class="empty-cart">No hay productos en el carrito</p>';
+        return;
+    }
+    
+    let itemsHTML = '';
+    let subtotal = 0;
+    
+    cart.items.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        subtotal += itemTotal;
+        
+        itemsHTML += `
+            <div class="order-item">
+                <div class="item-info">
+                    <h4>${item.name}</h4>
+                    <span class="item-quantity">Cantidad: ${item.quantity}</span>
+                </div>
+                <div class="item-price">$${itemTotal.toFixed(2)}</div>
+            </div>
+        `;
+    });
+    
+    const taxes = subtotal * 0.12; // 12% tax
+    const total = subtotal + taxes;
+    
+    itemsContainer.innerHTML = itemsHTML;
+    subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+    taxesEl.textContent = `$${taxes.toFixed(2)}`;
+    totalEl.textContent = `$${total.toFixed(2)}`;
+}
+
+function loadPaymentMethods() {
+    const container = document.getElementById('payment-methods-container');
+    
+    if (!window.paymentProcessor) {
+        container.innerHTML = '<p class="error">Error: PaymentProcessor no está disponible</p>';
+        return;
+    }
+    
+    // Load active payment gateways
+    window.paymentProcessor.loadActiveGateways();
+    
+    // Generate payment options HTML
+    container.innerHTML = window.paymentProcessor.generatePaymentOptionsHTML();
+    
+    // Show checkout actions if payment methods are available
+    if (window.paymentProcessor.activeGateways.length > 0) {
+        document.getElementById('checkout-actions').style.display = 'flex';
+    }
+}
+
+async function processCheckoutPayment() {
+    try {
+        if (!window.paymentProcessor || !window.paymentProcessor.selectedGateway) {
+            throw new Error('Por favor selecciona un método de pago');
+        }
+        
+        // Validate payment form
+        const validation = window.paymentProcessor.validatePaymentData(window.paymentProcessor.selectedGateway);
+        if (!validation.valid) {
+            throw new Error(validation.errors.join('\n'));
+        }
+        
+        // Show processing modal
+        showPaymentProcessingModal();
+        
+        // Get cart data
+        const cart = window.cartController.getCart();
+        const subtotal = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const taxes = subtotal * 0.12;
+        const total = subtotal + taxes;
+        
+        const cartData = {
+            items: cart.items,
+            subtotal: subtotal,
+            taxes: taxes,
+            total: total
+        };
+        
+        // Process payment
+        const result = await window.paymentProcessor.processPayment(cartData);
+        
+        // Hide processing modal
+        hidePaymentProcessingModal();
+        
+        if (result.success) {
+            // Process successful purchase
+            processPurchaseSuccess(result);
+            
+            // Show success modal
+            showPaymentSuccessModal(result);
+            
+            // Clear cart
+            window.cartController.clearCart();
+        }
+        
+    } catch (error) {
+        console.error('❌ Payment processing error:', error);
+        hidePaymentProcessingModal();
+        showPaymentErrorModal(error.message);
+    }
+}
+
+function processPurchaseSuccess(paymentResult) {
+    console.log('🎉 Processing successful purchase');
+    
+    const cart = window.cartController.getCart();
+    if (!cart || !cart.items) return;
+    
+    // Get existing purchased products
+    let purchasedProducts = JSON.parse(localStorage.getItem('purchasedProducts') || '[]');
+    
+    // Add new products
+    cart.items.forEach(item => {
+        const productId = parseInt(item.product_id || item.id);
+        if (!purchasedProducts.includes(productId)) {
+            purchasedProducts.push(productId);
+        }
+    });
+    
+    // Save to localStorage
+    localStorage.setItem('purchasedProducts', JSON.stringify(purchasedProducts));
+    
+    // Save transaction record
+    const transaction = {
+        id: paymentResult.transactionId,
+        gateway: paymentResult.gateway,
+        amount: paymentResult.amount,
+        currency: paymentResult.currency,
+        items: cart.items,
+        timestamp: new Date().toISOString(),
+        receipt: paymentResult.receipt
+    };
+    
+    // Save transaction
+    let transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+    transactions.push(transaction);
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+    
+    console.log('✅ Purchase processed successfully:', transaction);
+}
+
+function showPaymentProcessingModal() {
+    const modal = document.getElementById('payment-processing-modal');
+    modal.style.display = 'flex';
+    
+    // Animate processing steps
+    setTimeout(() => {
+        const steps = modal.querySelectorAll('.processing-step');
+        steps[0].classList.remove('active');
+        steps[1].classList.add('active');
+    }, 1500);
+    
+    setTimeout(() => {
+        const steps = modal.querySelectorAll('.processing-step');
+        steps[1].classList.remove('active');
+        steps[2].classList.add('active');
+    }, 3000);
+}
+
+function hidePaymentProcessingModal() {
+    document.getElementById('payment-processing-modal').style.display = 'none';
+    
+    // Reset steps
+    const steps = document.querySelectorAll('.processing-step');
+    steps.forEach(step => step.classList.remove('active'));
+    steps[0].classList.add('active');
+}
+
+function showPaymentSuccessModal(result) {
+    const modal = document.getElementById('payment-success-modal');
+    const detailsContainer = document.getElementById('transaction-details');
+    
+    detailsContainer.innerHTML = `
+        <div class="transaction-info">
+            <div class="info-item">
+                <span class="info-label">ID de Transacción:</span>
+                <span class="info-value">${result.transactionId}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Método de Pago:</span>
+                <span class="info-value">${result.gateway}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Monto:</span>
+                <span class="info-value">${result.amount} ${result.currency}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Fecha:</span>
+                <span class="info-value">${new Date().toLocaleString()}</span>
+            </div>
+        </div>
+    `;
+    
+    modal.style.display = 'flex';
+}
+
+function showPaymentErrorModal(errorMessage) {
+    const modal = document.getElementById('payment-error-modal');
+    const errorEl = document.getElementById('error-message');
+    
+    errorEl.textContent = errorMessage;
+    modal.style.display = 'flex';
+}
+
+function goToProducts() {
+    document.getElementById('payment-success-modal').style.display = 'none';
+    window.viewManager.loadView('products/list');
+}
+
+function downloadReceipt() {
+    // Generate and download receipt
+    const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+    const lastTransaction = transactions[transactions.length - 1];
+    
+    if (lastTransaction) {
+        window.open(lastTransaction.receipt, '_blank');
+    }
+}
+
+function retryPayment() {
+    document.getElementById('payment-error-modal').style.display = 'none';
+}
+
+function closeErrorModal() {
+    document.getElementById('payment-error-modal').style.display = 'none';
+    window.viewManager.loadView('cart/cart');
+}
+</script>

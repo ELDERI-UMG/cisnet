@@ -1,21 +1,23 @@
 {
   "version": 2,
-  "functions": {
-    "backend/simple_server.js": {
-      "runtime": "@vercel/node"
+  "builds": [
+    {
+      "src": "backend/simple_server.js",
+      "use": "@vercel/node@22.x"
+    },
+    {
+      "src": "frontend/**/*",
+      "use": "@vercel/static"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/backend/simple_server.js"
+      "dest": "backend/simple_server.js"
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend/$1"
+      "dest": "frontend/$1"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }

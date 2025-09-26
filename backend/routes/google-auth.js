@@ -1,9 +1,13 @@
 const express = require('express');
 const { OAuth2Client } = require('google-auth-library');
+const SupabaseUserRepository = require('../src/auth/infrastructure/repositories/SupabaseUserRepository');
+const JwtService = require('../src/auth/infrastructure/services/JwtService');
 const router = express.Router();
 
-// Initialize Google OAuth client
+// Initialize Google OAuth client and repositories
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const userRepository = new SupabaseUserRepository();
+const jwtService = new JwtService();
 
 // Simple test route
 router.get('/test', (req, res) => {
@@ -92,30 +96,40 @@ router.post('/google-login', async (req, res) => {
             });
         }
 
-        // Here you would typically:
-        // 1. Check if user exists in your database
-        // 2. Create session or JWT token
-        // 3. Return user data and authentication token
+        // Check if user exists in Supabase
+        let user = await userRepository.findByEmail(email);
 
-        // For now, we'll simulate a successful login
-        const userData = {
-            id: `google_${googleId}`,
-            name: name,
-            email: email,
-            picture: picture,
-            provider: 'google',
-            emailVerified: emailVerified
-        };
+        if (!user) {
+            // Create new user with Google data
+            const googleUser = {
+                id: googleId,
+                name: name,
+                email: email,
+                picture: picture
+            };
 
-        // In a real implementation, you'd generate a proper JWT token
-        const token = `google_token_${Date.now()}_${googleId}`;
+            user = await userRepository.saveGoogleUser(googleUser);
+        }
+
+        // Generate JWT token
+        const token = jwtService.generateToken({
+            id: user.id,
+            email: user.email,
+            name: user.name
+        });
 
         console.log('🔐 Google login successful for:', email);
 
         res.json({
             success: true,
             data: {
-                user: userData,
+                user: {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    picture: user.profile_picture || picture,
+                    provider: 'google'
+                },
                 token: token
             },
             message: 'Google login successful'
@@ -123,7 +137,7 @@ router.post('/google-login', async (req, res) => {
 
     } catch (error) {
         console.error('❌ Google login error:', error);
-        
+
         res.status(500).json({
             success: false,
             error: 'Internal server error during Google login'
@@ -202,19 +216,10 @@ router.post('/user-by-email', async (req, res) => {
             });
         }
 
-        // Here you would check your database for existing user
-        // For now, we'll simulate that users don't exist (to test registration flow)
-        
-        // Simulate some existing users for testing
-        const existingEmails = [
-            'test@example.com',
-            'admin@cisnet.com',
-            'demo@gmail.com'
-        ];
+        // Check Supabase for existing user
+        const user = await userRepository.findByEmail(email);
 
-        const userExists = existingEmails.includes(email.toLowerCase());
-
-        if (userExists) {
+        if (user) {
             res.json({
                 success: true,
                 exists: true,
@@ -230,7 +235,7 @@ router.post('/user-by-email', async (req, res) => {
 
     } catch (error) {
         console.error('❌ User lookup error:', error);
-        
+
         res.status(500).json({
             success: false,
             error: 'Internal server error during user lookup'

@@ -3,11 +3,11 @@ const LoginUser = require('../../application/useCases/LoginUser');
 const RecoverPassword = require('../../application/useCases/RecoverPassword');
 const RegisterUserDto = require('../../application/dtos/RegisterUserDto');
 const LoginUserDto = require('../../application/dtos/LoginUserDto');
-const MySqlUserRepository = require('../repositories/MySqlUserRepository');
+const SupabaseUserRepository = require('../repositories/SupabaseUserRepository');
 
 class AuthController {
     constructor() {
-        this.userRepository = new MySqlUserRepository();
+        this.userRepository = new SupabaseUserRepository();
         this.registerUser = new RegisterUser(this.userRepository);
         this.loginUser = new LoginUser(this.userRepository);
         this.recoverPassword = new RecoverPassword(this.userRepository);

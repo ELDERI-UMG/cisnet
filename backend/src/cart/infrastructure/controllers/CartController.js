@@ -1,11 +1,11 @@
 const ManageCart = require('../../application/useCases/ManageCart');
-const SqliteCartRepository = require('../repositories/SqliteCartRepository');
-const SqliteProductRepository = require('../../../products/infrastructure/repositories/SqliteProductRepository');
+const SupabaseCartRepository = require('../repositories/SupabaseCartRepository');
+const SupabaseProductRepository = require('../../../products/infrastructure/repositories/SupabaseProductRepository');
 
 class CartController {
     constructor() {
-        this.cartRepository = new SqliteCartRepository();
-        this.productRepository = new SqliteProductRepository();
+        this.cartRepository = new SupabaseCartRepository();
+        this.productRepository = new SupabaseProductRepository();
         this.manageCart = new ManageCart(this.cartRepository, this.productRepository);
     }
 
@@ -54,7 +54,7 @@ class CartController {
                 });
             }
 
-            const result = await this.manageCart.updateItem(userId, parseInt(id), quantity);
+            const result = await this.manageCart.updateItem(userId, id, quantity);
             
             res.json({
                 success: true,
@@ -70,7 +70,7 @@ class CartController {
             const userId = req.user.id;
             const { id } = req.params;
             
-            await this.manageCart.removeItem(userId, parseInt(id));
+            await this.manageCart.removeItem(userId, id);
             
             res.json({
                 success: true,

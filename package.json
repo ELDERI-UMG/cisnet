@@ -1,0 +1,24 @@
+{
+  "name": "cisnet",
+  "version": "1.0.0",
+  "description": "Sistema de venta de software CisNet - E-commerce platform",
+  "main": "backend/simple_server.js",
+  "scripts": {
+    "start": "node backend/simple_server.js",
+    "dev": "nodemon backend/simple_server.js",
+    "build": "echo 'No build step required for vanilla JS frontend'",
+    "vercel-build": "cd backend && npm install"
+  },
+  "keywords": [
+    "ecommerce",
+    "software",
+    "sales",
+    "supabase",
+    "vercel"
+  ],
+  "author": "Eddy Alexander Ramirez Lorenzana",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

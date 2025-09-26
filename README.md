@@ -1,136 +1,152 @@
-# CISNET - Sistema de Venta de Software
+# CisNet - Sistema de Venta de Software
 
-Sistema de venta de software refactorizado con arquitectura simplificada, usando MySQL como base de datos y frontend MVC.
+Sistema de e-commerce para venta de software desarrollado con tecnologías modernas.
 
-## Características
+## 🚀 Tecnologías
 
-- Backend con arquitectura hexagonal simplificada
-- Frontend con patrón MVC (Model-View-Controller)
-- Base de datos MySQL local
-- API REST para gestión de productos, usuarios y carrito
-- Interfaz web responsive
+- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
+- **Backend**: Node.js + Express
+- **Base de datos**: Supabase (PostgreSQL)
+- **Autenticación**: Google OAuth + JWT
+- **Hosting**: Vercel
+- **Arquitectura**: Hexagonal (Clean Architecture)
 
-## Requisitos
+## 📋 Características
 
-- Node.js 16+
-- MySQL 5.7+
-- npm
+- ✅ Catálogo de productos de software
+- ✅ Sistema de carrito de compras
+- ✅ Autenticación con Google
+- ✅ Panel de administración
+- ✅ Procesamiento de pagos
+- ✅ Responsive design
+- ✅ Búsqueda de productos
+- ✅ Filtros por categoría
 
-## Instalación
+## 🛠️ Configuración
 
-### 1. Configurar la base de datos
+### Variables de Entorno
 
-Crear una base de datos MySQL llamada `cisnet`:
+Crea un archivo `.env` en el directorio `backend/` con las siguientes variables:
 
-```sql
-CREATE DATABASE cisnet;
+```env
+# Server Configuration
+PORT=3000
+NODE_ENV=production
+
+# Supabase Configuration
+SUPABASE_URL=your-supabase-url
+SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+
+# JWT Configuration
+JWT_SECRET=your-jwt-secret
+JWT_EXPIRES_IN=24h
+
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# CORS Configuration
+CORS_ORIGIN=https://your-domain.vercel.app
 ```
 
-### 2. Instalar dependencias del backend
+### Instalación Local
 
+1. Clona el repositorio:
+```bash
+git clone https://github.com/ELDERI-UMG/cisnet.git
+cd cisnet
+```
+
+2. Instala las dependencias del backend:
 ```bash
 cd backend
 npm install
 ```
 
-### 3. Configurar variables de entorno
+3. Configura las variables de entorno (ver arriba)
 
-Editar el archivo `backend/.env` con la configuración de tu base de datos MySQL:
-
-```
-DB_HOST=localhost
-DB_USER=tu_usuario
-DB_PASSWORD=tu_contraseña
-DB_NAME=cisnet
+4. Ejecuta las migraciones de Supabase:
+```sql
+-- Ejecuta el contenido de database/supabase-migration.sql en tu dashboard de Supabase
 ```
 
-### 4. Ejecutar migraciones
-
+5. Inicia el servidor de desarrollo:
 ```bash
-cd backend
-npm run migrate
+npm run dev
 ```
 
-### 5. Poblar la base de datos (opcional)
+## 🚀 Despliegue en Vercel
 
-```bash
-cd backend
-npm run seed
-```
+1. Conecta tu repositorio de GitHub con Vercel
+2. Configura las variables de entorno en el dashboard de Vercel
+3. Despliega automáticamente con cada push a main
 
-## Uso
+### Variables de Entorno en Vercel
 
-### Iniciar el backend
+Agrega estas variables en la configuración de Vercel:
 
-```bash
-cd backend
-npm start
-```
+- `NODE_ENV`: production
+- `SUPABASE_URL`: Tu URL de Supabase
+- `SUPABASE_ANON_KEY`: Tu clave anónima de Supabase
+- `SUPABASE_SERVICE_ROLE_KEY`: Tu clave de service role
+- `JWT_SECRET`: Tu secreto JWT
+- `GOOGLE_CLIENT_ID`: Tu ID de cliente de Google
+- `GOOGLE_CLIENT_SECRET`: Tu secreto de cliente de Google
+- `CORS_ORIGIN`: Tu dominio de Vercel
 
-El servidor estará disponible en `http://localhost:3000`
+## 📊 Base de Datos
 
-### Acceder al frontend
+El proyecto utiliza Supabase como base de datos. La estructura incluye:
 
-Abrir `frontend/index.html` en un navegador web o servir los archivos estáticos desde un servidor web.
+- **users**: Usuarios del sistema
+- **products**: Catálogo de productos
+- **cart_items**: Items del carrito de compras
+- **purchases**: Historial de compras
+- **purchase_items**: Detalles de items comprados
 
-## Estructura del Proyecto
+## 🔐 Seguridad
 
-```
-CisnetPOS/
-├── backend/
-│   ├── src/
-│   │   ├── auth/
-│   │   ├── products/
-│   │   ├── cart/
-│   │   └── shared/
-│   ├── database/
-│   ├── server.js
-│   └── package.json
-└── frontend/
-    ├── models/
-    ├── views/
-    ├── controllers/
-    ├── assets/
-    └── index.html
-```
+- Autenticación JWT
+- Google OAuth integrado
+- Row Level Security (RLS) en Supabase
+- Validación de datos en backend
+- Sanitización de inputs
 
-## API Endpoints
+## 📱 Responsive Design
 
-### Autenticación
-- `POST /api/auth/register` - Registrar usuario
-- `POST /api/auth/login` - Iniciar sesión
-- `GET /api/auth/profile` - Obtener perfil
-- `POST /api/auth/logout` - Cerrar sesión
+El frontend está optimizado para:
+- Desktop (1200px+)
+- Tablet (768px - 1199px)
+- Mobile (320px - 767px)
 
-### Productos
-- `GET /api/products` - Listar productos
-- `GET /api/products/:id` - Obtener producto
-- `GET /api/products/search` - Buscar productos
-- `GET /api/products/categories` - Obtener categorías
+## 🧪 Testing
 
-### Carrito
-- `GET /api/cart` - Obtener carrito
-- `POST /api/cart/items` - Agregar item
-- `PUT /api/cart/items/:id` - Actualizar item
-- `DELETE /api/cart/items/:id` - Eliminar item
-- `DELETE /api/cart` - Vaciar carrito
+Para probar el sistema localmente:
 
-## Tecnologías Utilizadas
+1. Crea productos de prueba en Supabase
+2. Configura Google OAuth para desarrollo
+3. Prueba el flujo completo de compra
 
-### Backend
-- Node.js
-- Express.js
-- MySQL2
-- JWT para autenticación
-- Bcrypt para encriptación
+## 🤝 Contribución
 
-### Frontend
-- HTML5
-- CSS3
-- JavaScript (ES6+)
-- Patrón MVC
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
 
-## Licencia
+## 📄 Licencia
 
-MIT
+Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 
+## 👨‍💻 Autor
+
+**Eddy Alexander Ramirez Lorenzana**
+- GitHub: [@ELDERI-UMG](https://github.com/ELDERI-UMG)
+
+## 🙏 Agradecimientos
+
+- Supabase por la infraestructura de base de datos
+- Vercel por el hosting
+- Google por la autenticación OAuth

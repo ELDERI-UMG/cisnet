@@ -1,11 +1,11 @@
 const GetProducts = require('../../application/useCases/GetProducts');
 const SearchProducts = require('../../application/useCases/SearchProducts');
 const { ProductFilterDto } = require('../../application/dtos/ProductDto');
-const SqliteProductRepository = require('../repositories/SqliteProductRepository');
+const SupabaseProductRepository = require('../repositories/SupabaseProductRepository');
 
 class ProductController {
     constructor() {
-        this.productRepository = new SqliteProductRepository();
+        this.productRepository = new SupabaseProductRepository();
         this.getProducts = new GetProducts(this.productRepository);
         this.searchProducts = new SearchProducts(this.productRepository);
     }
@@ -24,8 +24,8 @@ class ProductController {
     getById = async (req, res, next) => {
         try {
             const { id } = req.params;
-            const product = await this.productRepository.findById(parseInt(id));
-            
+            const product = await this.productRepository.findById(id);
+
             if (!product) {
                 return res.status(404).json({
                     error: 'Producto no encontrado'

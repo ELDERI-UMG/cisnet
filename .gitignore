@@ -4,6 +4,10 @@
 .env.development.local
 .env.test.local
 .env.production.local
+.vercel
+
+# Configuración de Supabase
+supabase/.env
 
 # Dependencias de Node.js
 node_modules/

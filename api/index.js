@@ -207,6 +207,182 @@ module.exports = (req, res) => {
         }
     }
 
+    // Authentication endpoints
+    if (endpoint === 'auth') {
+        if (method === 'POST' && subPaths[0] === 'login') {
+            try {
+                let body = '';
+                req.on('data', chunk => { body += chunk; });
+                req.on('end', () => {
+                    try {
+                        const { email, password } = JSON.parse(body);
+
+                        // Mock admin user for demo
+                        if (email === 'eddy@cisnet.com' && password === '123456') {
+                            const user = {
+                                id: 'admin_1',
+                                name: 'Eddy Alexander',
+                                email: 'eddy@cisnet.com',
+                                provider: 'local'
+                            };
+
+                            const token = `token_${Date.now()}_${user.id}`;
+
+                            return res.json({
+                                success: true,
+                                data: { user, token },
+                                message: 'Login successful'
+                            });
+                        }
+
+                        return res.status(401).json({
+                            success: false,
+                            error: 'Invalid email or password'
+                        });
+                    } catch (parseError) {
+                        return res.status(400).json({
+                            success: false,
+                            error: 'Invalid JSON payload'
+                        });
+                    }
+                });
+                return;
+            } catch (error) {
+                return res.status(500).json({
+                    success: false,
+                    error: 'Internal server error'
+                });
+            }
+        }
+
+        if (method === 'POST' && subPaths[0] === 'register') {
+            try {
+                let body = '';
+                req.on('data', chunk => { body += chunk; });
+                req.on('end', () => {
+                    try {
+                        const { name, email, password } = JSON.parse(body);
+
+                        // Mock registration (in production, save to database)
+                        return res.json({
+                            success: true,
+                            message: 'User registered successfully'
+                        });
+                    } catch (parseError) {
+                        return res.status(400).json({
+                            success: false,
+                            error: 'Invalid JSON payload'
+                        });
+                    }
+                });
+                return;
+            } catch (error) {
+                return res.status(500).json({
+                    success: false,
+                    error: 'Internal server error'
+                });
+            }
+        }
+
+        if (method === 'POST' && subPaths[0] === 'logout') {
+            return res.json({
+                success: true,
+                message: 'Logout successful'
+            });
+        }
+    }
+
+    // Google Auth endpoints
+    if (endpoint === 'google-auth') {
+        if (method === 'POST' && subPaths[0] === 'user-by-email') {
+            try {
+                let body = '';
+                req.on('data', chunk => { body += chunk; });
+                req.on('end', () => {
+                    try {
+                        const { email } = JSON.parse(body);
+
+                        // Check if email is in allowed test users
+                        const testUsers = ['elderixcopal@gmail.com', 'eixcopala@miumg.edu.gt'];
+
+                        if (testUsers.includes(email)) {
+                            return res.json({
+                                success: true,
+                                user: { email }
+                            });
+                        }
+
+                        return res.json({
+                            success: false,
+                            error: 'User not found'
+                        });
+                    } catch (parseError) {
+                        return res.status(400).json({
+                            success: false,
+                            error: 'Invalid JSON payload'
+                        });
+                    }
+                });
+                return;
+            } catch (error) {
+                return res.status(500).json({
+                    success: false,
+                    error: 'Internal server error'
+                });
+            }
+        }
+
+        if (method === 'POST' && (subPaths[0] === 'google-login' || subPaths[0] === 'google-register')) {
+            try {
+                let body = '';
+                req.on('data', chunk => { body += chunk; });
+                req.on('end', () => {
+                    try {
+                        const googleUser = JSON.parse(body);
+
+                        // Validate test users
+                        const testUsers = ['elderixcopal@gmail.com', 'eixcopala@miumg.edu.gt'];
+
+                        if (!testUsers.includes(googleUser.email)) {
+                            return res.status(403).json({
+                                success: false,
+                                error: 'Este email no está autorizado para acceder a la aplicación en modo prueba'
+                            });
+                        }
+
+                        // Create user session
+                        const user = {
+                            id: `google_${googleUser.googleId}`,
+                            name: googleUser.name,
+                            email: googleUser.email,
+                            picture: googleUser.picture,
+                            provider: 'google'
+                        };
+
+                        const token = `token_${Date.now()}_${user.id}`;
+
+                        return res.json({
+                            success: true,
+                            data: { user, token },
+                            message: 'Google authentication successful'
+                        });
+                    } catch (parseError) {
+                        return res.status(400).json({
+                            success: false,
+                            error: 'Invalid JSON payload'
+                        });
+                    }
+                });
+                return;
+            } catch (error) {
+                return res.status(500).json({
+                    success: false,
+                    error: 'Internal server error'
+                });
+            }
+        }
+    }
+
     // Purchase endpoints
     if (endpoint === 'purchases') {
         if (method === 'POST' && subPaths[0] === 'create-order') {
@@ -361,6 +537,12 @@ module.exports = (req, res) => {
             'GET /api/cart',
             'POST /api/cart/items',
             'DELETE /api/cart',
+            'POST /api/auth/login',
+            'POST /api/auth/register',
+            'POST /api/auth/logout',
+            'POST /api/google-auth/user-by-email',
+            'POST /api/google-auth/google-login',
+            'POST /api/google-auth/google-register',
             'POST /api/purchases/create-order',
             'POST /api/purchases/get-download-url',
             'POST /api/purchases/check-access'

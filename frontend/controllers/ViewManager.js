@@ -9,24 +9,63 @@ class ViewManager {
     async loadView(viewPath, data = {}) {
         try {
             let viewHTML;
-            
-            if (this.viewCache.has(viewPath)) {
-                viewHTML = this.viewCache.get(viewPath);
-            } else {
-                const response = await fetch(`views/${viewPath}.html`);
-                if (!response.ok) {
-                    throw new Error(`Error loading view: ${viewPath}`);
+
+            // Handle special cases with direct controller methods
+            if (viewPath === 'auth/login') {
+                if (window.authController) {
+                    viewHTML = window.authController.showLoginForm();
+                } else {
+                    throw new Error('AuthController not available');
                 }
-                viewHTML = await response.text();
-                this.viewCache.set(viewPath, viewHTML);
+            } else if (viewPath === 'auth/register') {
+                if (window.authController) {
+                    viewHTML = window.authController.showRegisterForm();
+                } else {
+                    throw new Error('AuthController not available');
+                }
+            } else if (viewPath === 'products/list') {
+                if (window.productController) {
+                    await window.productController.showProducts();
+                    return true;
+                } else {
+                    throw new Error('ProductController not available');
+                }
+            } else if (viewPath === 'cart/cart') {
+                if (window.cartController) {
+                    await window.cartController.showCart();
+                    return true;
+                } else {
+                    throw new Error('CartController not available');
+                }
+            } else if (viewPath === 'checkout/payment') {
+                if (window.cartController) {
+                    window.cartController.showPaymentForm();
+                    return true;
+                } else {
+                    throw new Error('CartController not available');
+                }
+            } else {
+                // Try to load from file for other views
+                if (this.viewCache.has(viewPath)) {
+                    viewHTML = this.viewCache.get(viewPath);
+                } else {
+                    const response = await fetch(`views/${viewPath}.html`);
+                    if (!response.ok) {
+                        throw new Error(`Error loading view: ${viewPath}`);
+                    }
+                    viewHTML = await response.text();
+                    this.viewCache.set(viewPath, viewHTML);
+                }
             }
-            
-            this.mainContent.innerHTML = viewHTML;
-            this.currentView = viewPath;
-            
-            this.processViewData(data);
-            this.attachViewEvents(viewPath);
-            
+
+            if (viewHTML) {
+                this.mainContent.innerHTML = viewHTML;
+                this.currentView = viewPath;
+
+                this.processViewData(data);
+                this.attachViewEvents(viewPath);
+            }
+
             return true;
         } catch (error) {
             console.error('Error loading view:', error);
@@ -105,8 +144,8 @@ class ViewManager {
 
     attachLoginEvents() {
         const loginForm = document.getElementById('login-form');
-        const registerLink = document.getElementById('register-link');
-        
+        const showRegisterLink = document.getElementById('show-register');
+
         if (loginForm) {
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -116,31 +155,37 @@ class ViewManager {
                 }
             });
         }
-        
-        if (registerLink) {
-            registerLink.addEventListener('click', (e) => {
+
+        if (showRegisterLink) {
+            showRegisterLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.loadView('auth/register');
             });
         }
-        
+
         // Initialize Google Sign-In button for login
+        console.log('🔧 Setting up Google Sign-In button...');
         if (window.googleAuth && window.googleAuth.initialized) {
-            window.googleAuth.renderSignInButton('google-signin-button');
+            window.googleAuth.renderSignInButton('google-signin-btn');
+            console.log('✅ Google Sign-In button rendered immediately');
         } else {
             // Wait for Google Auth to initialize
+            console.log('⏳ Waiting for Google Auth to initialize...');
             setTimeout(() => {
                 if (window.googleAuth && window.googleAuth.initialized) {
-                    window.googleAuth.renderSignInButton('google-signin-button');
+                    window.googleAuth.renderSignInButton('google-signin-btn');
+                    console.log('✅ Google Sign-In button rendered after delay');
+                } else {
+                    console.error('❌ Google Auth still not initialized');
                 }
-            }, 1500);
+            }, 2000);
         }
     }
 
     attachRegisterEvents() {
         const registerForm = document.getElementById('register-form');
-        const loginLink = document.getElementById('login-link-from-register');
-        
+        const showLoginLink = document.getElementById('show-login');
+
         if (registerForm) {
             registerForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -150,24 +195,30 @@ class ViewManager {
                 }
             });
         }
-        
-        if (loginLink) {
-            loginLink.addEventListener('click', (e) => {
+
+        if (showLoginLink) {
+            showLoginLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.loadView('auth/login');
             });
         }
-        
+
         // Initialize Google Sign-In button for registration
+        console.log('🔧 Setting up Google Sign-In button for register...');
         if (window.googleAuth && window.googleAuth.initialized) {
-            window.googleAuth.renderSignInButton('google-register-button');
+            window.googleAuth.renderSignInButton('google-signin-btn');
+            console.log('✅ Google Sign-In button rendered immediately');
         } else {
             // Wait for Google Auth to initialize
+            console.log('⏳ Waiting for Google Auth to initialize...');
             setTimeout(() => {
                 if (window.googleAuth && window.googleAuth.initialized) {
-                    window.googleAuth.renderSignInButton('google-register-button');
+                    window.googleAuth.renderSignInButton('google-signin-btn');
+                    console.log('✅ Google Sign-In button rendered after delay');
+                } else {
+                    console.error('❌ Google Auth still not initialized');
                 }
-            }, 1500);
+            }, 2000);
         }
     }
 

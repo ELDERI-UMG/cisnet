@@ -47,6 +47,9 @@ class User {
 
     // Clear user data from localStorage
     clearStorage() {
+        // Clear user purchases before clearing user data
+        this.clearUserPurchases();
+
         localStorage.removeItem('cisnet_token');
         localStorage.removeItem('cisnet_user');
         localStorage.removeItem('guest_cart');
@@ -171,14 +174,10 @@ class User {
             return false;
         }
 
-        // First check localStorage for purchased products
-        try {
-            const purchasedProducts = JSON.parse(localStorage.getItem('purchasedProducts') || '[]');
-            if (purchasedProducts.includes(String(productId))) {
-                return true;
-            }
-        } catch (error) {
-            console.error('Error reading purchased products from localStorage:', error);
+        // Check user-specific purchased products
+        const purchasedProducts = this.getPurchasedProducts();
+        if (purchasedProducts.includes(String(productId))) {
+            return true;
         }
 
         // Fallback: check with server (if API is available)
@@ -195,17 +194,151 @@ class User {
             const data = await response.json();
             if (data.success === true && data.hasAccess === true) {
                 // Update localStorage with this purchase
-                const purchasedProducts = JSON.parse(localStorage.getItem('purchasedProducts') || '[]');
-                if (!purchasedProducts.includes(String(productId))) {
-                    purchasedProducts.push(String(productId));
-                    localStorage.setItem('purchasedProducts', JSON.stringify(purchasedProducts));
-                }
+                this.addPurchase(productId);
                 return true;
             }
             return false;
         } catch (error) {
             console.error('Error checking purchase status with server:', error);
             return false;
+        }
+    }
+
+    // Get purchased products for current user
+    getPurchasedProducts() {
+        if (!this.isAuthenticated()) {
+            return [];
+        }
+
+        try {
+            const userPurchases = localStorage.getItem(`purchasedProducts_${this.id}`) || '[]';
+            return JSON.parse(userPurchases);
+        } catch (error) {
+            console.error('Error reading purchased products from localStorage:', error);
+            return [];
+        }
+    }
+
+    // Add a purchase for current user
+    addPurchase(productId) {
+        if (!this.isAuthenticated()) {
+            console.error('Cannot add purchase: user not authenticated');
+            return false;
+        }
+
+        try {
+            const purchasedProducts = this.getPurchasedProducts();
+            const productIdStr = String(productId);
+
+            if (!purchasedProducts.includes(productIdStr)) {
+                purchasedProducts.push(productIdStr);
+                localStorage.setItem(`purchasedProducts_${this.id}`, JSON.stringify(purchasedProducts));
+                console.log(`✅ Added purchase for user ${this.id}, product ${productIdStr}`);
+
+                // Also save purchase details for receipts
+                this.savePurchaseDetails(productIdStr);
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error adding purchase to localStorage:', error);
+            return false;
+        }
+    }
+
+    // Add multiple purchases (for bulk purchases)
+    addPurchases(productIds) {
+        if (!this.isAuthenticated()) {
+            console.error('Cannot add purchases: user not authenticated');
+            return false;
+        }
+
+        try {
+            const purchasedProducts = this.getPurchasedProducts();
+            let added = 0;
+
+            productIds.forEach(productId => {
+                const productIdStr = String(productId);
+                if (!purchasedProducts.includes(productIdStr)) {
+                    purchasedProducts.push(productIdStr);
+                    this.savePurchaseDetails(productIdStr);
+                    added++;
+                }
+            });
+
+            if (added > 0) {
+                localStorage.setItem(`purchasedProducts_${this.id}`, JSON.stringify(purchasedProducts));
+                console.log(`✅ Added ${added} purchases for user ${this.id}`);
+            }
+
+            return added;
+        } catch (error) {
+            console.error('Error adding purchases to localStorage:', error);
+            return 0;
+        }
+    }
+
+    // Save purchase details for receipts and history
+    savePurchaseDetails(productId) {
+        try {
+            const purchaseKey = `purchaseDetails_${this.id}`;
+            const existingDetails = JSON.parse(localStorage.getItem(purchaseKey) || '{}');
+
+            if (!existingDetails[productId]) {
+                existingDetails[productId] = {
+                    productId: productId,
+                    purchaseDate: new Date().toISOString(),
+                    userId: this.id,
+                    userEmail: this.email,
+                    userName: this.name
+                };
+
+                localStorage.setItem(purchaseKey, JSON.stringify(existingDetails));
+                console.log(`💾 Saved purchase details for product ${productId}`);
+            }
+        } catch (error) {
+            console.error('Error saving purchase details:', error);
+        }
+    }
+
+    // Get purchase details for a specific product
+    getPurchaseDetails(productId) {
+        if (!this.isAuthenticated()) {
+            return null;
+        }
+
+        try {
+            const purchaseKey = `purchaseDetails_${this.id}`;
+            const details = JSON.parse(localStorage.getItem(purchaseKey) || '{}');
+            return details[String(productId)] || null;
+        } catch (error) {
+            console.error('Error getting purchase details:', error);
+            return null;
+        }
+    }
+
+    // Get all purchase history for current user
+    getPurchaseHistory() {
+        if (!this.isAuthenticated()) {
+            return [];
+        }
+
+        try {
+            const purchaseKey = `purchaseDetails_${this.id}`;
+            const details = JSON.parse(localStorage.getItem(purchaseKey) || '{}');
+            return Object.values(details);
+        } catch (error) {
+            console.error('Error getting purchase history:', error);
+            return [];
+        }
+    }
+
+    // Clear all user data when logging out
+    clearUserPurchases() {
+        if (this.id) {
+            localStorage.removeItem(`purchasedProducts_${this.id}`);
+            localStorage.removeItem(`purchaseDetails_${this.id}`);
+            console.log(`🧹 Cleared purchase data for user ${this.id}`);
         }
     }
 

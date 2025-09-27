@@ -470,14 +470,10 @@ class CartController {
 
             console.log('✅ Order created successfully:', data);
 
-            // Marcar productos como comprados en localStorage
-            let purchasedProducts = JSON.parse(localStorage.getItem('purchasedProducts') || '[]');
-            items.forEach(item => {
-                if (!purchasedProducts.includes(item.product_id)) {
-                    purchasedProducts.push(item.product_id);
-                }
-            });
-            localStorage.setItem('purchasedProducts', JSON.stringify(purchasedProducts));
+            // Marcar productos como comprados usando el sistema mejorado de User
+            const productIds = items.map(item => item.product_id);
+            const added = this.cartModel.user.addPurchases(productIds);
+            console.log(`🎁 Marked ${added} products as purchased for user ${this.cartModel.user.id}`);
 
             // Refresh product buttons to show download options
             if (window.app && window.app.productController) {

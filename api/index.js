@@ -36,47 +36,172 @@ module.exports = (req, res) => {
         });
     }
 
-    // Products data
+    // Products data - Complete catalog from media-config.js
     const products = [
         {
             id: '1',
-            name: 'Microsoft Office 365',
-            description: 'Suite completa de productividad con Word, Excel, PowerPoint',
-            price: 99.99,
-            category: 'Productividad',
-            image_url: 'https://images.unsplash.com/photo-1633613286991-611fe299c4be?w=300',
-            featured: true,
-            active: true
-        },
-        {
-            id: '2',
             name: 'Sistema de Facturación',
-            description: 'Software completo de facturación electrónica',
+            description: 'Software completo de facturación electrónica para tu negocio',
             price: 299.99,
             category: 'Software',
             image_url: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=300',
-            featured: false,
-            active: true
+            featured: true,
+            active: true,
+            videoId: 'Q7YvKOQ7ROQ'
         },
         {
-            id: '3',
+            id: '2',
             name: 'Sistema POS',
-            description: 'Punto de venta integrado para tu negocio',
+            description: 'Punto de venta integrado para gestión comercial',
             price: 199.99,
             category: 'Software',
             image_url: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=300',
             featured: true,
-            active: true
+            active: true,
+            videoId: 'FdHqjhYNW8Q'
         },
         {
-            id: '4',
+            id: '3',
+            name: 'Sistema de Inventarios',
+            description: 'Control avanzado de stock y almacén',
+            price: 149.99,
+            category: 'Software',
+            image_url: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=300',
+            featured: false,
+            active: true,
+            videoId: 'pQ7YvKOQ7ROQ'
+        },
+        {
+            id: '7',
+            name: 'Microsoft Office 365',
+            description: 'Suite completa de productividad con Word, Excel, PowerPoint y más',
+            price: 99.99,
+            category: 'Productividad',
+            image_url: 'https://images.unsplash.com/photo-1633613286991-611fe299c4be?w=300',
+            featured: true,
+            active: true,
+            videoId: 'YsKA18WqBKw'
+        },
+        {
+            id: '8',
+            name: 'Adobe Photoshop 2024',
+            description: 'Editor de imágenes profesional líder en la industria',
+            price: 149.99,
+            category: 'Diseño',
+            image_url: 'https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=300',
+            featured: true,
+            active: true,
+            videoId: 'wAxdwVtewuE'
+        },
+        {
+            id: '9',
+            name: 'Visual Studio Code',
+            description: 'Editor de código fuente ligero pero potente para desarrolladores',
+            price: 0.00,
+            category: 'Desarrollo',
+            image_url: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=300',
+            featured: true,
+            active: true,
+            videoId: 'qvQNgur2KCI'
+        },
+        {
+            id: '10',
+            name: 'Windows 11 Pro',
+            description: 'Sistema operativo profesional con características avanzadas',
+            price: 199.99,
+            category: 'Sistema',
+            image_url: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=300',
+            featured: false,
+            active: true,
+            videoId: 'tP4n4WBBNeY'
+        },
+        {
+            id: '11',
+            name: 'AutoCAD 2024',
+            description: 'Software líder en diseño asistido por computadora',
+            price: 299.99,
+            category: 'Ingeniería',
+            image_url: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=300',
+            featured: false,
+            active: true,
+            videoId: 'uilGYrBNV3g'
+        },
+        {
+            id: '12',
+            name: 'Minecraft Java Edition',
+            description: 'El juego de construcción y aventura más popular del mundo',
+            price: 26.95,
+            category: 'Juegos',
+            image_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300',
+            featured: true,
+            active: true,
+            videoId: 'MmB9b5njVbA'
+        },
+        {
+            id: '13',
+            name: 'Norton 360 Deluxe',
+            description: 'Protección completa de ciberseguridad para todos tus dispositivos',
+            price: 49.99,
+            category: 'Seguridad',
+            image_url: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=300',
+            featured: false,
+            active: true,
+            videoId: '2HKvK6prfbc'
+        },
+        {
+            id: '14',
+            name: 'Zoom Pro',
+            description: 'Plataforma profesional de videoconferencias y colaboración',
+            price: 14.99,
+            category: 'Comunicación',
+            image_url: 'https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?w=300',
+            featured: false,
+            active: true,
+            videoId: 'V1MGCyJsXVo'
+        },
+        {
+            id: '15',
             name: 'Adobe Creative Suite',
-            description: 'Herramientas profesionales para diseño gráfico',
+            description: 'Herramientas profesionales completas para diseño gráfico y multimedia',
             price: 199.99,
             category: 'Diseño',
             image_url: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=300',
             featured: true,
-            active: true
+            active: true,
+            videoId: '1WjQdmf2BMg'
+        },
+        {
+            id: '16',
+            name: 'IntelliJ IDEA Ultimate',
+            description: 'IDE avanzado para desarrollo Java y tecnologías empresariales',
+            price: 149.00,
+            category: 'Desarrollo',
+            image_url: 'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=300',
+            featured: false,
+            active: true,
+            videoId: 'yefmcX57Eyg'
+        },
+        {
+            id: '17',
+            name: 'Spotify Premium',
+            description: 'Streaming de música sin anuncios con calidad superior',
+            price: 9.99,
+            category: 'Entretenimiento',
+            image_url: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300',
+            featured: false,
+            active: true,
+            videoId: 'QpWABxd18tQ'
+        },
+        {
+            id: '18',
+            name: 'VMware Workstation Pro',
+            description: 'Virtualización profesional para ejecutar múltiples sistemas operativos',
+            price: 249.99,
+            category: 'Virtualización',
+            image_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300',
+            featured: false,
+            active: true,
+            videoId: 'wX75Z-4MEoM'
         }
     ];
 
@@ -455,12 +580,23 @@ module.exports = (req, res) => {
                             });
                         }
 
-                        // Mock download URLs (in production, these would be actual files)
+                        // Real download URLs from media-config.js
                         const downloadUrls = {
-                            '1': 'https://drive.google.com/file/d/mock-office365-download/view',
-                            '2': 'https://drive.google.com/file/d/mock-billing-system-download/view',
-                            '3': 'https://drive.google.com/file/d/mock-pos-system-download/view',
-                            '4': 'https://drive.google.com/file/d/mock-adobe-suite-download/view'
+                            '1': 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi', // Sistema Facturación
+                            '2': 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi', // Sistema POS
+                            '3': 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi', // Sistema Inventarios
+                            '7': 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi', // Microsoft Office 365
+                            '8': 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi', // Adobe Photoshop
+                            '9': 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi', // Visual Studio Code
+                            '10': 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi', // Windows 11 Pro
+                            '11': 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi', // AutoCAD 2024
+                            '12': 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi', // Minecraft Java
+                            '13': 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi', // Norton 360
+                            '14': 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi', // Zoom Pro
+                            '15': 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi', // Adobe Creative Suite
+                            '16': 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi', // IntelliJ IDEA
+                            '17': 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi', // Spotify Premium
+                            '18': 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi'  // VMware Workstation
                         };
 
                         return res.json({

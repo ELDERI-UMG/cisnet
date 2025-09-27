@@ -2,10 +2,10 @@
   "name": "software-sales-backend",
   "version": "1.0.0",
   "description": "Backend para sistema de venta de software con arquitectura hexagonal",
-  "main": "simple_server.js",
+  "main": "supabase_server.js",
   "scripts": {
-    "start": "node simple_server.js",
-    "dev": "nodemon simple_server.js",
+    "start": "node supabase_server.js",
+    "dev": "nodemon supabase_server.js",
     "migrate": "node database/migrate.js",
     "seed": "node database/seed.js"
   },

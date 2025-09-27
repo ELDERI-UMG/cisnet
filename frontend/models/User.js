@@ -80,7 +80,7 @@ class User {
     // Regular login with email/password
     async login(email, password) {
         try {
-            const response = await fetch('http://localhost:3000/api/auth/login', {
+            const response = await fetch(`${window.API_CONFIG.baseUrl}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -108,7 +108,7 @@ class User {
     // Register with email/password
     async register(name, email, password) {
         try {
-            const response = await fetch('http://localhost:3000/api/auth/register', {
+            const response = await fetch(`${window.API_CONFIG.baseUrl}/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, email, password })
@@ -130,7 +130,7 @@ class User {
     async authenticateWithGoogle(googleUser) {
         try {
             // Check if user exists
-            const checkResponse = await fetch('http://localhost:3000/api/google-auth/user-by-email', {
+            const checkResponse = await fetch(`${window.API_CONFIG.baseUrl}/api/google-auth/user-by-email`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: googleUser.email })
@@ -140,7 +140,7 @@ class User {
             let endpoint = existingUser.success ? 'google-login' : 'google-register';
 
             // Login or register
-            const authResponse = await fetch(`http://localhost:3000/api/google-auth/${endpoint}`, {
+            const authResponse = await fetch(`${window.API_CONFIG.baseUrl}/api/google-auth/${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(googleUser)
@@ -171,8 +171,19 @@ class User {
             return false;
         }
 
+        // First check localStorage for purchased products
         try {
-            const response = await fetch('http://localhost:3000/api/purchases/check-access', {
+            const purchasedProducts = JSON.parse(localStorage.getItem('purchasedProducts') || '[]');
+            if (purchasedProducts.includes(String(productId))) {
+                return true;
+            }
+        } catch (error) {
+            console.error('Error reading purchased products from localStorage:', error);
+        }
+
+        // Fallback: check with server (if API is available)
+        try {
+            const response = await fetch(`${window.API_CONFIG.baseUrl}/api/purchases/check-access`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -182,8 +193,18 @@ class User {
             });
 
             const data = await response.json();
-            return data.success === true && data.hasAccess === true;
+            if (data.success === true && data.hasAccess === true) {
+                // Update localStorage with this purchase
+                const purchasedProducts = JSON.parse(localStorage.getItem('purchasedProducts') || '[]');
+                if (!purchasedProducts.includes(String(productId))) {
+                    purchasedProducts.push(String(productId));
+                    localStorage.setItem('purchasedProducts', JSON.stringify(purchasedProducts));
+                }
+                return true;
+            }
+            return false;
         } catch (error) {
+            console.error('Error checking purchase status with server:', error);
             return false;
         }
     }
@@ -192,7 +213,7 @@ class User {
     async logout() {
         try {
             if (this.token) {
-                await fetch('http://localhost:3000/api/auth/logout', {
+                await fetch(`${window.API_CONFIG.baseUrl}/api/auth/logout`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${this.token}` }
                 });

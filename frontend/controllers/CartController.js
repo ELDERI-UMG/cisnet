@@ -437,7 +437,7 @@ class CartController {
 
             console.log('📝 Creating order in backend...', orderData);
 
-            const response = await fetch('http://localhost:3000/api/purchases/create-order', {
+            const response = await fetch(`${window.API_CONFIG.baseUrl}/api/purchases/create-order`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -9,7 +9,7 @@ class Cart {
         // If user is authenticated, use server cart
         if (this.user && this.user.isAuthenticated && this.user.isAuthenticated()) {
             try {
-                const response = await fetch('http://localhost:3000/api/cart', {
+                const response = await fetch(`${window.API_CONFIG.baseUrl}/api/cart`, {
                     headers: {
                         'Authorization': `Bearer ${this.user.token}`
                     }
@@ -47,7 +47,7 @@ class Cart {
         // If user is authenticated, use server cart
         if (this.user && this.user.isAuthenticated && this.user.isAuthenticated()) {
             try {
-                const response = await fetch('http://localhost:3000/api/cart/items', {
+                const response = await fetch(`${window.API_CONFIG.baseUrl}/api/cart/items`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -115,7 +115,7 @@ class Cart {
     async updateItem(itemId, quantity) {
         if (this.user && this.user.isAuthenticated && this.user.isAuthenticated()) {
             try {
-                const response = await fetch(`http://localhost:3000/api/cart/items/${itemId}`, {
+                const response = await fetch(`${window.API_CONFIG.baseUrl}/api/cart/items/${itemId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -161,7 +161,7 @@ class Cart {
     async removeItem(itemId) {
         if (this.user && this.user.isAuthenticated && this.user.isAuthenticated()) {
             try {
-                const response = await fetch(`http://localhost:3000/api/cart/items/${itemId}`, {
+                const response = await fetch(`${window.API_CONFIG.baseUrl}/api/cart/items/${itemId}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${this.user.token}`
@@ -199,7 +199,7 @@ class Cart {
     async clearCart() {
         if (this.user && this.user.isAuthenticated && this.user.isAuthenticated()) {
             try {
-                const response = await fetch('http://localhost:3000/api/cart', {
+                const response = await fetch(`${window.API_CONFIG.baseUrl}/api/cart`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${this.user.token}`

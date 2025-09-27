@@ -2,10 +2,10 @@
   "name": "cisnet",
   "version": "1.0.0",
   "description": "Sistema de venta de software CisNet - E-commerce platform",
-  "main": "backend/supabase_server.js",
+  "main": "backend/server.js",
   "scripts": {
-    "start": "node backend/supabase_server.js",
-    "dev": "nodemon backend/supabase_server.js",
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
     "build": "echo 'No build step required for vanilla JS frontend'",
     "vercel-build": "cd backend && npm install"
   },

@@ -1,7 +1,7 @@
--- Migration script for Supabase
--- Crear tablas para CisNet
+-- CisNet Database Setup - Complete Supabase Configuration
+-- Execute this in Supabase SQL Editor
 
--- Tabla de usuarios
+-- Create tables
 CREATE TABLE IF NOT EXISTS users (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     username VARCHAR(100) NOT NULL,
@@ -13,7 +13,6 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Tabla de productos
 CREATE TABLE IF NOT EXISTS products (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -31,7 +30,6 @@ CREATE TABLE IF NOT EXISTS products (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Tabla de items del carrito
 CREATE TABLE IF NOT EXISTS cart_items (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -42,7 +40,6 @@ CREATE TABLE IF NOT EXISTS cart_items (
     UNIQUE(user_id, product_id)
 );
 
--- Tabla de compras
 CREATE TABLE IF NOT EXISTS purchases (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -54,7 +51,6 @@ CREATE TABLE IF NOT EXISTS purchases (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Tabla de items de compra
 CREATE TABLE IF NOT EXISTS purchase_items (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     purchase_id UUID REFERENCES purchases(id) ON DELETE CASCADE,
@@ -65,63 +61,58 @@ CREATE TABLE IF NOT EXISTS purchase_items (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Insertar usuario administrador (password: 123456)
--- La contraseña ya está hasheada con bcrypt
+-- Insert admin user (password: 123456)
 INSERT INTO users (username, email, password, created_at) VALUES
 ('Eddy Alexander', 'eddy@cisnet.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW())
 ON CONFLICT (email) DO NOTHING;
 
--- Insertar productos de ejemplo
+-- Insert products
 INSERT INTO products (name, description, price, category, image_url, download_url, file_size, version, requirements, featured) VALUES
 ('Microsoft Office 365', 'Suite completa de productividad con Word, Excel, PowerPoint y más', 99.99, 'Productividad', 'https://images.unsplash.com/photo-1633613286991-611fe299c4be?w=300', '#', '4.2 GB', '2024', 'Windows 10/11, 4GB RAM', true),
 ('Adobe Creative Suite', 'Herramientas profesionales para diseño gráfico y multimedia', 199.99, 'Diseño', 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=300', '#', '8.5 GB', '2024', 'Windows 10/11, 8GB RAM, GPU dedicada', true),
 ('AutoCAD 2024', 'Software líder en diseño asistido por computadora', 299.99, 'Ingeniería', 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=300', '#', '6.8 GB', '2024', 'Windows 10/11, 16GB RAM', false),
 ('Visual Studio Code', 'Editor de código fuente ligero pero potente', 0.00, 'Desarrollo', 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=300', '#', '200 MB', 'Latest', 'Windows/Mac/Linux, 2GB RAM', true),
 ('Photoshop 2024', 'Editor de imágenes profesional líder en la industria', 149.99, 'Diseño', 'https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=300', '#', '3.2 GB', '2024', 'Windows 10/11, 8GB RAM', false),
-('IntelliJ IDEA Ultimate', 'IDE inteligente para desarrollo Java y más', 179.99, 'Desarrollo', 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=300', '#', '1.5 GB', '2024.1', 'Windows/Mac/Linux, 4GB RAM', false),
-('Windows 11 Pro', 'Sistema operativo Windows 11 Professional', 199.99, 'Sistema Operativo', 'https://images.unsplash.com/photo-1629654297299-c8506221ca97?w=300', '#', '5.4 GB', '23H2', 'TPM 2.0, Secure Boot', true),
-('Norton 360 Deluxe', 'Protección completa contra malware y amenazas', 79.99, 'Seguridad', 'https://images.unsplash.com/photo-1563206767-5b18f218e8de?w=300', '#', '500 MB', '2024', 'Windows/Mac, 2GB RAM', false),
-('Spotify Premium', 'Música ilimitada sin anuncios', 9.99, 'Entretenimiento', 'https://images.unsplash.com/photo-1611339555312-e607c8352fd7?w=300', '#', '100 MB', 'Latest', 'Cualquier dispositivo', false),
-('Zoom Pro', 'Plataforma de videoconferencias profesional', 14.99, 'Comunicación', 'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=300', '#', '150 MB', '5.17', 'Windows/Mac/Linux, cámara web', false),
-('VMware Workstation', 'Virtualización para escritorio', 249.99, 'Virtualización', 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300', '#', '600 MB', '17.0', 'Windows/Linux, 8GB RAM', false),
-('Minecraft Java Edition', 'Juego de construcción y aventura', 26.95, 'Videojuegos', 'https://images.unsplash.com/photo-1606040906485-26bb2c99671a?w=300', '#', '1 GB', '1.20', 'Java 8+, 4GB RAM', true),
 ('Sistema de Facturación', 'Software completo de facturación electrónica', 299.99, 'Software', 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=300', '#', '2.5 GB', '2024', 'Windows 10/11, 4GB RAM', false),
 ('Sistema POS', 'Punto de venta integrado', 199.99, 'Software', 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=300', '#', '1.8 GB', '2024', 'Windows 10/11, 4GB RAM', true),
 ('Sistema de Inventarios', 'Control de stock y almacén', 149.99, 'Software', 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=300', '#', '1.2 GB', '2024', 'Windows 10/11, 2GB RAM', false);
 
--- Crear políticas RLS (Row Level Security)
+-- Enable Row Level Security
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cart_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE purchases ENABLE ROW LEVEL SECURITY;
 ALTER TABLE purchase_items ENABLE ROW LEVEL SECURITY;
 
--- Políticas para usuarios (solo pueden ver/editar sus propios datos)
+-- Public access policy for products (allows anyone to view catalog)
+DROP POLICY IF EXISTS "Anyone can view products" ON products;
+DROP POLICY IF EXISTS "Public can view active products" ON products;
+
+CREATE POLICY "Public can view active products" ON products
+    FOR SELECT USING (active = true);
+
+-- User policies (users can only access their own data)
 CREATE POLICY "Users can view their own profile" ON users
     FOR SELECT USING (auth.uid()::text = id::text);
 
 CREATE POLICY "Users can update their own profile" ON users
     FOR UPDATE USING (auth.uid()::text = id::text);
 
--- Políticas para productos (todos pueden ver, solo admins pueden modificar)
-CREATE POLICY "Anyone can view products" ON products
-    FOR SELECT USING (active = true);
-
--- Políticas para carrito (solo el usuario puede ver/modificar su carrito)
+-- Cart policies
 CREATE POLICY "Users can view their own cart" ON cart_items
     FOR SELECT USING (auth.uid()::text = user_id::text);
 
 CREATE POLICY "Users can manage their own cart" ON cart_items
     FOR ALL USING (auth.uid()::text = user_id::text);
 
--- Políticas para compras (solo el usuario puede ver sus compras)
+-- Purchase policies
 CREATE POLICY "Users can view their own purchases" ON purchases
     FOR SELECT USING (auth.uid()::text = user_id::text);
 
 CREATE POLICY "Users can create their own purchases" ON purchases
     FOR INSERT WITH CHECK (auth.uid()::text = user_id::text);
 
--- Políticas para items de compra
+-- Purchase items policies
 CREATE POLICY "Users can view their own purchase items" ON purchase_items
     FOR SELECT USING (
         EXISTS (
@@ -131,7 +122,7 @@ CREATE POLICY "Users can view their own purchase items" ON purchase_items
         )
     );
 
--- Crear índices para mejor rendimiento
+-- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
@@ -139,3 +130,9 @@ CREATE INDEX IF NOT EXISTS idx_products_featured ON products(featured, active);
 CREATE INDEX IF NOT EXISTS idx_cart_items_user_id ON cart_items(user_id);
 CREATE INDEX IF NOT EXISTS idx_purchases_user_id ON purchases(user_id);
 CREATE INDEX IF NOT EXISTS idx_purchase_items_purchase_id ON purchase_items(purchase_id);
+
+-- Verification queries
+SELECT 'Database setup completed successfully!' as status;
+SELECT 'Users count:' as info, COUNT(*) as total FROM users;
+SELECT 'Products count:' as info, COUNT(*) as total FROM products;
+SELECT 'Featured products:' as info, COUNT(*) as total FROM products WHERE featured = true;

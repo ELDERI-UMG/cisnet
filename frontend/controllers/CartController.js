@@ -441,6 +441,8 @@ class CartController {
             };
 
             console.log('📝 Creating order in backend...', orderData);
+            console.log('🔗 API URL:', `${window.API_CONFIG.baseUrl}/api/purchases/create-order`);
+            console.log('🔑 Using token:', token ? 'Token present' : 'No token');
 
             const response = await fetch(`${window.API_CONFIG.baseUrl}/api/purchases/create-order`, {
                 method: 'POST',
@@ -451,7 +453,16 @@ class CartController {
                 body: JSON.stringify(orderData)
             });
 
+            console.log('📡 Response status:', response.status, response.statusText);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ API Error Response:', errorText);
+                throw new Error(`Server error ${response.status}: ${response.statusText}`);
+            }
+
             const data = await response.json();
+            console.log('📦 Response data:', data);
 
             if (!data.success) {
                 throw new Error(data.error || 'Error al crear la orden');
@@ -538,7 +549,61 @@ class CartController {
             
         } catch (error) {
             console.error('💥 Error completing purchase:', error);
-            this.showMessage('Error al completar la compra: ' + error.message, 'error');
+
+            // Show detailed error information
+            const mainContent = document.getElementById('main-content');
+            mainContent.innerHTML = `
+                <div class="container" style="text-align: center; padding: 3rem;">
+                    <div style="background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: 3px solid #dc3545;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">❌</div>
+                        <h1 style="color: #dc3545; margin-bottom: 1rem;">Error en el Pago</h1>
+                        <p style="font-size: 1.2rem; color: #666; margin-bottom: 2rem;">
+                            Lo sentimos, hubo un problema al procesar tu pago
+                        </p>
+
+                        <div style="background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 1.5rem; border-radius: 8px; margin: 2rem 0; text-align: left;">
+                            <h4 style="margin-top: 0;">Detalles del Error:</h4>
+                            <p style="margin: 0; font-family: monospace; word-break: break-word;">
+                                <strong>Mensaje:</strong> ${error.message}<br>
+                                <strong>Tipo:</strong> ${error.name || 'Error'}<br>
+                                <strong>Hora:</strong> ${new Date().toLocaleString()}
+                            </p>
+                        </div>
+
+                        <div style="background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; padding: 1rem; border-radius: 8px; margin: 2rem 0;">
+                            <h4 style="margin-top: 0;">💡 Qué hacer:</h4>
+                            <p style="margin: 0;">
+                                1. Verifica tu conexión a internet<br>
+                                2. Intenta nuevamente en unos momentos<br>
+                                3. Si el problema persiste, contacta al soporte<br>
+                                4. Tu carrito se ha preservado
+                            </p>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+                            <button onclick="window.cartController.showCart()" class="btn"
+                                    style="background: linear-gradient(45deg, #007bff, #6f42c1); color: white; font-weight: 600;">
+                                🛒 Volver al Carrito
+                            </button>
+                            <button onclick="window.cartController.retryPayment()" class="btn"
+                                    style="background: linear-gradient(45deg, #28a745, #20c997); color: white; font-weight: 600;">
+                                🔄 Intentar de Nuevo
+                            </button>
+                            <button onclick="window.viewManager.loadView('shared/home')" class="btn">
+                                🏠 Ir a Inicio
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Log additional debugging information
+            console.error('🔍 Additional debugging info:');
+            console.error('- User authenticated:', this.cartModel.user.isAuthenticated());
+            console.error('- User token:', this.cartModel.user.token ? 'Present' : 'Missing');
+            console.error('- Cart items:', this.cartModel.items?.length || 0);
+            console.error('- Cart total:', this.cartModel.total || 0);
+            console.error('- API Config:', window.API_CONFIG);
         }
     }
 
@@ -910,6 +975,20 @@ class CartController {
         URL.revokeObjectURL(url);
 
         this.showMessage('📄 Comprobante descargado como archivo HTML.', 'success');
+    }
+
+    // Método para reintentar el pago
+    retryPayment() {
+        console.log('🔄 Retrying payment...');
+
+        // Verificar que todavía tengamos items en el carrito
+        if (!this.cartModel.items || this.cartModel.items.length === 0) {
+            this.showMessage('Error: No hay productos en el carrito para procesar', 'error');
+            return;
+        }
+
+        // Volver a mostrar el formulario de pago
+        this.showPaymentForm();
     }
 }
 

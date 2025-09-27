@@ -1,6 +1,6 @@
 class GoogleAuthConfig {
     constructor() {
-        this.clientId = '245143519733-76krc6317q8trft38s9rph2kl90afkig.apps.googleusercontent.com';
+        this.clientId = '88859141929-if1r3v8nro1a7s3crj0sphaubllnt8li.apps.googleusercontent.com';
         this.initialized = false;
     }
 

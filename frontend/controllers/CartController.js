@@ -514,9 +514,13 @@ class CartController {
                         </div>
                         
                         <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
-                            <button onclick="window.viewManager.loadView('products/list')" class="btn" 
+                            <button onclick="window.viewManager.loadView('products/list')" class="btn"
                                     style="background: linear-gradient(45deg, #007bff, #6f42c1); color: white; font-weight: 600;">
                                 📥 Ver Mis Descargas
+                            </button>
+                            <button onclick="window.cartController.downloadReceipt('${order.id}', ${JSON.stringify(items).replace(/"/g, '&quot;')}, ${total})" class="btn"
+                                    style="background: linear-gradient(45deg, #28a745, #20c997); color: white; font-weight: 600;">
+                                📄 Descargar Comprobante
                             </button>
                             <button onclick="window.viewManager.loadView('shared/home')" class="btn">
                                 🏠 Ir a Inicio
@@ -707,7 +711,7 @@ class CartController {
     // Método para obtener carrito (usado por ViewManager)
     getCart() {
         console.log('🛒 CartController.getCart called');
-        
+
         if (!this.cartModel || !this.cartModel.items) {
             console.log('❌ Cart model or items not available');
             return { items: [], total: 0 };
@@ -715,17 +719,197 @@ class CartController {
 
         const items = this.cartModel.items || [];
         let total = 0;
-        
+
         items.forEach(item => {
             total += (item.price * item.quantity);
         });
 
         console.log('✅ Cart retrieved:', { itemCount: items.length, total });
-        
+
         return {
             items: items,
             total: total
         };
+    }
+
+    // Generar y descargar comprobante de pago
+    downloadReceipt(orderId, items, total) {
+        try {
+            console.log('📄 Generating receipt...', { orderId, items, total });
+
+            const userData = this.cartModel.user.getUserData();
+            const currentDate = new Date();
+
+            // Crear contenido HTML del comprobante
+            const receiptHTML = this.generateReceiptHTML(orderId, items, total, userData, currentDate);
+
+            // Crear y descargar PDF
+            this.createPDFFromHTML(receiptHTML, `Comprobante_${orderId}.pdf`);
+
+        } catch (error) {
+            console.error('❌ Error generating receipt:', error);
+            alert('Error al generar el comprobante de pago');
+        }
+    }
+
+    // Generar HTML del comprobante
+    generateReceiptHTML(orderId, items, total, userData, date) {
+        const formattedDate = date.toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        const itemsHTML = items.map(item => `
+            <tr>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.name}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">${item.quantity}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">$${item.price.toFixed(2)}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">$${(item.price * item.quantity).toFixed(2)}</td>
+            </tr>
+        `).join('');
+
+        return `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Comprobante de Pago - ${orderId}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+                    .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #007bff; padding-bottom: 20px; }
+                    .company-info { margin-bottom: 20px; }
+                    .receipt-info { margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 5px; }
+                    .customer-info { margin-bottom: 20px; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                    th { background: #007bff; color: white; padding: 12px 8px; text-align: left; }
+                    .total-section { text-align: right; margin-top: 20px; }
+                    .total-row { font-size: 18px; font-weight: bold; margin-top: 10px; padding-top: 10px; border-top: 2px solid #007bff; }
+                    .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #666; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1 style="color: #007bff; margin-bottom: 10px;">CISNET</h1>
+                    <h2 style="margin: 0;">Comprobante de Pago</h2>
+                </div>
+
+                <div class="company-info">
+                    <h3>Información de la Empresa</h3>
+                    <p><strong>CisNet Software Solutions</strong><br>
+                    Sistema de venta de software profesional<br>
+                    Email: eddy@cisnet.com<br>
+                    Web: https://cisnet.vercel.app</p>
+                </div>
+
+                <div class="receipt-info">
+                    <div style="display: flex; justify-content: space-between;">
+                        <div>
+                            <p><strong>N° de Orden:</strong> ${orderId}</p>
+                            <p><strong>Fecha:</strong> ${formattedDate}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <p><strong>Método de Pago:</strong> Demostración</p>
+                            <p><strong>Estado:</strong> <span style="color: #28a745;">✅ Pagado</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="customer-info">
+                    <h3>Información del Cliente</h3>
+                    <p><strong>Nombre:</strong> ${userData.name}</p>
+                    <p><strong>Email:</strong> ${userData.email}</p>
+                    <p><strong>Proveedor:</strong> ${userData.provider === 'google' ? 'Google OAuth' : 'Cuenta Local'}</p>
+                </div>
+
+                <h3>Productos Adquiridos</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th style="text-align: center;">Cantidad</th>
+                            <th style="text-align: right;">Precio Unit.</th>
+                            <th style="text-align: right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHTML}
+                    </tbody>
+                </table>
+
+                <div class="total-section">
+                    <div style="margin-bottom: 5px;">Subtotal: $${total.toFixed(2)}</div>
+                    <div style="margin-bottom: 5px;">Impuestos (0%): $0.00</div>
+                    <div class="total-row">Total Pagado: $${total.toFixed(2)}</div>
+                </div>
+
+                <div class="footer">
+                    <p>Este es un comprobante generado automáticamente por el sistema CisNet.<br>
+                    Gracias por tu compra. Puedes descargar tus productos desde el catálogo.<br>
+                    <strong>¡Disfruta tu software!</strong></p>
+                    <p style="margin-top: 20px; font-size: 10px;">
+                        Generado el ${formattedDate} | CisNet © 2024 | Todos los derechos reservados
+                    </p>
+                </div>
+            </body>
+            </html>
+        `;
+    }
+
+    // Crear PDF desde HTML usando jsPDF
+    createPDFFromHTML(htmlContent, filename) {
+        // Crear un iframe temporal para renderizar el HTML
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '210mm';
+        iframe.style.height = '297mm';
+        document.body.appendChild(iframe);
+
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(htmlContent);
+        iframeDoc.close();
+
+        // Esperar a que el contenido se renderice y luego imprimir
+        setTimeout(() => {
+            try {
+                // Usar window.print() del iframe
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+
+                // Remover el iframe después de un momento
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                }, 1000);
+
+                // Mostrar mensaje de éxito
+                this.showMessage('📄 Comprobante generado. Se abrirá la ventana de impresión.', 'success');
+            } catch (error) {
+                console.error('❌ Error printing receipt:', error);
+
+                // Fallback: descargar como HTML
+                this.downloadAsHTML(htmlContent, filename.replace('.pdf', '.html'));
+                document.body.removeChild(iframe);
+            }
+        }, 500);
+    }
+
+    // Fallback: descargar como archivo HTML
+    downloadAsHTML(htmlContent, filename) {
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        this.showMessage('📄 Comprobante descargado como archivo HTML.', 'success');
     }
 }
 

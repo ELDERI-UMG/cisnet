@@ -52,7 +52,9 @@ class GoogleAuthConfig {
                     client_id: this.clientId,
                     callback: this.handleCredentialResponse.bind(this),
                     auto_select: false,
-                    cancel_on_tap_outside: false
+                    cancel_on_tap_outside: false,
+                    use_fedcm_for_prompt: false,
+                    itp_support: true
                 });
                 resolve();
             } catch (error) {
@@ -64,9 +66,10 @@ class GoogleAuthConfig {
     // Handle Google credential response
     async handleCredentialResponse(response) {
         try {
-            console.log('🔐 Google credential received');
+            console.log('🔐 Google credential received:', response);
 
             if (!response.credential) {
+                console.error('❌ No credential in response:', response);
                 throw new Error('No credential received from Google');
             }
 
@@ -74,25 +77,40 @@ class GoogleAuthConfig {
             const userInfo = this.decodeJWT(response.credential);
             console.log('👤 User info from Google:', userInfo);
 
+            // Validate required fields
+            if (!userInfo.email || !userInfo.sub) {
+                console.error('❌ Missing required user info:', userInfo);
+                throw new Error('Invalid user information from Google');
+            }
+
             // Create user object
             const googleUser = {
                 googleId: userInfo.sub,
                 email: userInfo.email,
-                name: userInfo.name,
-                picture: userInfo.picture,
-                emailVerified: userInfo.email_verified,
+                name: userInfo.name || userInfo.email,
+                picture: userInfo.picture || '',
+                emailVerified: userInfo.email_verified || false,
                 provider: 'google'
             };
 
+            console.log('📦 Processed Google user:', googleUser);
+
             // Process authentication
             if (window.authController) {
+                console.log('🚀 Calling authController.handleGoogleAuth...');
                 await window.authController.handleGoogleAuth(googleUser);
             } else {
                 console.error('❌ AuthController not available');
+                throw new Error('AuthController not initialized');
             }
 
         } catch (error) {
             console.error('❌ Error handling Google credential:', error);
+            if (window.authController) {
+                window.authController.showMessage('Error al procesar autenticación de Google: ' + error.message, 'error');
+            } else {
+                alert('Error al procesar autenticación de Google: ' + error.message);
+            }
         }
     }
 
@@ -126,6 +144,9 @@ class GoogleAuthConfig {
         }
 
         try {
+            // Clear any existing content
+            container.innerHTML = '';
+
             window.google.accounts.id.renderButton(container, {
                 theme: 'outline',
                 size: 'large',
@@ -133,12 +154,39 @@ class GoogleAuthConfig {
                 text: 'continue_with',
                 shape: 'rectangular',
                 logo_alignment: 'left',
-                width: '100%'
+                width: '100%',
+                locale: 'es'
             });
 
-            console.log('✅ Google Sign-In button rendered');
+            console.log('✅ Google Sign-In button rendered successfully');
         } catch (error) {
             console.error('❌ Error rendering Google Sign-In button:', error);
+            // Fallback: Create manual button
+            container.innerHTML = `
+                <button onclick="window.googleAuth.promptGoogleSignIn()"
+                        style="width: 100%; padding: 12px; border: 1px solid #dadce0; border-radius: 4px; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" style="width: 18px; height: 18px;">
+                    <span>Continuar con Google</span>
+                </button>
+            `;
+        }
+    }
+
+    // Prompt Google Sign-In (manual trigger)
+    promptGoogleSignIn() {
+        if (window.google && window.google.accounts) {
+            try {
+                window.google.accounts.id.prompt((notification) => {
+                    console.log('Google Sign-In prompt result:', notification);
+                    if (notification.isNotDisplayed()) {
+                        console.error('Google Sign-In prompt was not displayed:', notification.getNotDisplayedReason());
+                    }
+                });
+            } catch (error) {
+                console.error('❌ Error prompting Google Sign-In:', error);
+            }
+        } else {
+            console.error('❌ Google APIs not loaded');
         }
     }
 

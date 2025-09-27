@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "backend/simple_server.js",
+      "src": "backend/supabase_server.js",
       "use": "@vercel/node"
     },
     {
@@ -13,7 +13,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "backend/simple_server.js"
+      "dest": "backend/supabase_server.js"
     },
     {
       "src": "/(.*)",

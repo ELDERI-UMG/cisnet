@@ -6,228 +6,139 @@ class Cart {
     }
 
     async getCart() {
-        // If user is authenticated, use server cart
-        if (this.user && this.user.isAuthenticated && this.user.isAuthenticated()) {
-            try {
-                const response = await fetch(`${window.API_CONFIG.baseUrl}/api/cart`, {
-                    headers: {
-                        'Authorization': `Bearer ${this.user.token}`
-                    }
-                });
+        try {
+            // Use localStorage for all users (authenticated and guest)
+            const cartKey = this.user && this.user.isAuthenticated() ? `cart_${this.user.id}` : 'guest_cart';
+            const localCart = JSON.parse(localStorage.getItem(cartKey) || '{"items": [], "total": 0}');
 
-                const data = await response.json();
+            this.items = localCart.items || [];
+            this.total = parseFloat(localCart.total) || 0;
 
-                if (response.ok && data.success) {
-                    this.items = data.data.items || [];
-                    this.total = parseFloat(data.data.total) || 0;
-                    return { success: true, data: data.data };
-                } else {
-                    return { success: false, error: data.error || 'Error al obtener carrito' };
-                }
-            } catch (error) {
-                return { success: false, error: 'Error de conexión' };
-            }
-        } else {
-            // For non-authenticated users, use localStorage
-            try {
-                const localCart = JSON.parse(localStorage.getItem('guest_cart') || '{"items": [], "total": 0}');
-                this.items = localCart.items || [];
-                this.total = parseFloat(localCart.total) || 0;
-                return { success: true, data: { items: this.items, total: this.total } };
-            } catch (error) {
-                console.error('Error loading guest cart:', error);
-                this.items = [];
-                this.total = 0;
-                return { success: true, data: { items: [], total: 0 } };
-            }
+            console.log(`📦 Cart loaded: ${this.items.length} items, total: $${this.total}`);
+            return { success: true, data: { items: this.items, total: this.total } };
+        } catch (error) {
+            console.error('Error loading cart:', error);
+            this.items = [];
+            this.total = 0;
+            return { success: true, data: { items: [], total: 0 } };
         }
     }
 
     async addItem(productId, quantity = 1) {
-        // If user is authenticated, use server cart
-        if (this.user && this.user.isAuthenticated && this.user.isAuthenticated()) {
-            try {
-                const response = await fetch(`${window.API_CONFIG.baseUrl}/api/cart/items`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${this.user.token}`
-                    },
-                    body: JSON.stringify({ productId, quantity })
-                });
-
-                const data = await response.json();
-
-                if (response.ok && data.success) {
-                    await this.getCart(); // Actualizar carrito
-                    return { success: true, data };
-                } else {
-                    return { success: false, error: data.error || 'Error al agregar item' };
-                }
-            } catch (error) {
-                return { success: false, error: 'Error de conexión' };
+        try {
+            // First, get product info from API
+            const productResponse = await fetch(`${window.API_CONFIG.baseUrl}/api/products/${productId}`);
+            if (!productResponse.ok) {
+                return { success: false, error: 'Producto no encontrado' };
             }
-        } else {
-            // For non-authenticated users, use localStorage
-            try {
-                // Get current cart
-                const localCart = JSON.parse(localStorage.getItem('guest_cart') || '{"items": [], "total": 0}');
+            const productData = await productResponse.json();
+            const product = productData.data;
 
-                // Find if product already exists
-                const existingItem = localCart.items.find(item => item.product_id == productId);
+            // Use localStorage for all users (authenticated and guest)
+            const cartKey = this.user && this.user.isAuthenticated() ? `cart_${this.user.id}` : 'guest_cart';
+            const localCart = JSON.parse(localStorage.getItem(cartKey) || '{"items": [], "total": 0}');
 
-                if (existingItem) {
-                    // Prevent adding duplicate products - only allow one instance of each product
-                    return {
-                        success: false,
-                        error: 'Este producto ya está en el carrito. Solo se puede agregar una vez cada producto.'
-                    };
-                } else {
-                    // Add new item (with basic info)
-                    localCart.items.push({
-                        id: Date.now(), // temporary ID
-                        product_id: productId,
-                        quantity: quantity,
-                        price: 99.99, // Default price - could be fetched from server
-                        product_name: `Producto ${productId}`
-                    });
-                }
+            // Find if product already exists
+            const existingItem = localCart.items.find(item => item.product_id == productId);
 
-                // Recalculate total
-                localCart.total = localCart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-                // Save to localStorage
-                localStorage.setItem('guest_cart', JSON.stringify(localCart));
-
-                // Update instance
-                this.items = localCart.items;
-                this.total = localCart.total;
-
-                console.log(`✅ Added product ${productId} to guest cart. Total items: ${this.items.length}`);
-                return { success: true, data: { items: this.items, total: this.total } };
-            } catch (error) {
-                console.error('Error adding item to guest cart:', error);
-                return { success: false, error: 'Error al agregar producto al carrito' };
+            if (existingItem) {
+                // Prevent adding duplicate products - only allow one instance of each product
+                return {
+                    success: false,
+                    error: 'Este producto ya está en el carrito. Solo se puede agregar una vez cada producto.'
+                };
+            } else {
+                // Add new item with real product info
+                const newItem = {
+                    id: Date.now(), // temporary ID
+                    product_id: String(productId),
+                    quantity: quantity,
+                    price: product.price,
+                    name: product.name
+                };
+                localCart.items.push(newItem);
             }
+
+            // Recalculate total
+            localCart.total = localCart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            // Save to localStorage
+            localStorage.setItem(cartKey, JSON.stringify(localCart));
+
+            // Update instance
+            this.items = localCart.items;
+            this.total = localCart.total;
+
+            console.log(`✅ Added product ${productId} to cart. Total items: ${this.items.length}`);
+            return { success: true, data: { items: this.items, total: this.total } };
+
+        } catch (error) {
+            console.error('Error adding item to cart:', error);
+            return { success: false, error: 'Error al agregar producto al carrito' };
         }
     }
 
     async updateItem(itemId, quantity) {
-        if (this.user && this.user.isAuthenticated && this.user.isAuthenticated()) {
-            try {
-                const response = await fetch(`${window.API_CONFIG.baseUrl}/api/cart/items/${itemId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${this.user.token}`
-                    },
-                    body: JSON.stringify({ quantity })
-                });
+        try {
+            // Use localStorage for all users
+            const cartKey = this.user && this.user.isAuthenticated() ? `cart_${this.user.id}` : 'guest_cart';
+            const localCart = JSON.parse(localStorage.getItem(cartKey) || '{"items": [], "total": 0}');
+            const item = localCart.items.find(item => item.id == itemId);
 
-                const data = await response.json();
+            if (item) {
+                item.quantity = quantity;
+                localCart.total = localCart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                localStorage.setItem(cartKey, JSON.stringify(localCart));
 
-                if (response.ok && data.success) {
-                    await this.getCart(); // Actualizar carrito
-                    return { success: true, data };
-                } else {
-                    return { success: false, error: data.error || 'Error al actualizar item' };
-                }
-            } catch (error) {
-                return { success: false, error: 'Error de conexión' };
+                this.items = localCart.items;
+                this.total = localCart.total;
+
+                console.log(`📝 Updated item ${itemId} quantity to ${quantity}`);
+                return { success: true, data: { items: this.items, total: this.total } };
+            } else {
+                return { success: false, error: 'Item no encontrado' };
             }
-        } else {
-            // For guest users, update localStorage
-            try {
-                const localCart = JSON.parse(localStorage.getItem('guest_cart') || '{"items": [], "total": 0}');
-                const item = localCart.items.find(item => item.id == itemId);
-
-                if (item) {
-                    item.quantity = quantity;
-                    localCart.total = localCart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                    localStorage.setItem('guest_cart', JSON.stringify(localCart));
-
-                    this.items = localCart.items;
-                    this.total = localCart.total;
-                    return { success: true, data: { items: this.items, total: this.total } };
-                } else {
-                    return { success: false, error: 'Item no encontrado' };
-                }
-            } catch (error) {
-                return { success: false, error: 'Error al actualizar item' };
-            }
+        } catch (error) {
+            console.error('Error updating item in cart:', error);
+            return { success: false, error: 'Error al actualizar item' };
         }
     }
 
     async removeItem(itemId) {
-        if (this.user && this.user.isAuthenticated && this.user.isAuthenticated()) {
-            try {
-                const response = await fetch(`${window.API_CONFIG.baseUrl}/api/cart/items/${itemId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${this.user.token}`
-                    }
-                });
+        try {
+            // Use localStorage for all users
+            const cartKey = this.user && this.user.isAuthenticated() ? `cart_${this.user.id}` : 'guest_cart';
+            const localCart = JSON.parse(localStorage.getItem(cartKey) || '{"items": [], "total": 0}');
 
-                const data = await response.json();
+            localCart.items = localCart.items.filter(item => item.id != itemId);
+            localCart.total = localCart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            localStorage.setItem(cartKey, JSON.stringify(localCart));
 
-                if (response.ok && data.success) {
-                    await this.getCart(); // Actualizar carrito
-                    return { success: true, data };
-                } else {
-                    return { success: false, error: data.error || 'Error al remover item' };
-                }
-            } catch (error) {
-                return { success: false, error: 'Error de conexión' };
-            }
-        } else {
-            // For guest users, remove from localStorage
-            try {
-                const localCart = JSON.parse(localStorage.getItem('guest_cart') || '{"items": [], "total": 0}');
-                localCart.items = localCart.items.filter(item => item.id != itemId);
-                localCart.total = localCart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                localStorage.setItem('guest_cart', JSON.stringify(localCart));
+            this.items = localCart.items;
+            this.total = localCart.total;
 
-                this.items = localCart.items;
-                this.total = localCart.total;
-                return { success: true, data: { items: this.items, total: this.total } };
-            } catch (error) {
-                return { success: false, error: 'Error al remover item' };
-            }
+            console.log(`🗑️ Removed item ${itemId} from cart. Remaining items: ${this.items.length}`);
+            return { success: true, data: { items: this.items, total: this.total } };
+        } catch (error) {
+            console.error('Error removing item from cart:', error);
+            return { success: false, error: 'Error al remover item' };
         }
     }
 
     async clearCart() {
-        if (this.user && this.user.isAuthenticated && this.user.isAuthenticated()) {
-            try {
-                const response = await fetch(`${window.API_CONFIG.baseUrl}/api/cart`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${this.user.token}`
-                    }
-                });
+        try {
+            // Use localStorage for all users
+            const cartKey = this.user && this.user.isAuthenticated() ? `cart_${this.user.id}` : 'guest_cart';
+            localStorage.setItem(cartKey, '{"items": [], "total": 0}');
 
-                const data = await response.json();
+            this.items = [];
+            this.total = 0;
 
-                if (response.ok && data.success) {
-                    this.items = [];
-                    this.total = 0;
-                    return { success: true, data };
-                } else {
-                    return { success: false, error: data.error || 'Error al limpiar carrito' };
-                }
-            } catch (error) {
-                return { success: false, error: 'Error de conexión' };
-            }
-        } else {
-            // For guest users, clear localStorage
-            try {
-                localStorage.setItem('guest_cart', '{"items": [], "total": 0}');
-                this.items = [];
-                this.total = 0;
-                return { success: true, data: { items: [], total: 0 } };
-            } catch (error) {
-                return { success: false, error: 'Error al limpiar carrito' };
-            }
+            console.log('🧹 Cart cleared successfully');
+            return { success: true, data: { items: [], total: 0 } };
+        } catch (error) {
+            console.error('Error clearing cart:', error);
+            return { success: false, error: 'Error al limpiar carrito' };
         }
     }
 

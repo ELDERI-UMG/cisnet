@@ -211,36 +211,54 @@ class ProductController {
     // View tutorial for product - ALWAYS available
     async viewTutorial(productId) {
         try {
-            // Check if mediaConfig is available
-            if (!window.mediaConfig) {
-                this.showProductMessage(productId, 'Error: Configuración de medios no disponible', 'error');
-                return;
-            }
+            console.log(`🎬 Opening tutorial for product ${productId}`);
 
-            // Get product media info (this is async)
-            const mediaInfo = await window.mediaConfig.getProductMedia(productId);
+            let videoUrl = null;
+            let productName = null;
 
-            if (mediaInfo && mediaInfo.videoUrl) {
-                // Open video in popup window
-                this.openVideoPopup(productId, mediaInfo.name, mediaInfo.videoUrl);
-                this.showProductMessage(productId, '📺 Abriendo tutorial...', 'success');
-            } else {
-                // Check if product exists in config but doesn't have video
-                const productExists = window.mediaConfig.productMedia[productId];
-                if (productExists) {
-                    this.showProductMessage(productId, 'Tutorial en desarrollo para este producto', 'error');
-                } else {
-                    // Generate YouTube URL directly for products not in config
-                    const fallbackVideoId = this.getFallbackVideoId(productId);
-                    if (fallbackVideoId) {
-                        const fallbackUrl = `https://www.youtube.com/watch?v=${fallbackVideoId}`;
-                        const productName = this.getProductNameFromPage(productId) || `Producto ${productId}`;
-                        this.openVideoPopup(productId, productName, fallbackUrl);
-                        this.showProductMessage(productId, '📺 Abriendo tutorial...', 'success');
-                    } else {
-                        this.showProductMessage(productId, 'Tutorial no disponible para este producto', 'error');
+            // First try to get video from API (most reliable source)
+            try {
+                const apiResponse = await fetch(`${window.API_CONFIG.baseUrl}/api/products/${productId}`);
+                if (apiResponse.ok) {
+                    const productData = await apiResponse.json();
+                    if (productData.success && productData.data.videoId) {
+                        videoUrl = `https://www.youtube.com/watch?v=${productData.data.videoId}`;
+                        productName = productData.data.name;
+                        console.log(`✅ Found video from API: ${videoUrl}`);
                     }
                 }
+            } catch (apiError) {
+                console.log(`⚠️ API not available, trying mediaConfig...`);
+            }
+
+            // Fallback to mediaConfig if API not available
+            if (!videoUrl && window.mediaConfig) {
+                const mediaInfo = await window.mediaConfig.getProductMedia(productId);
+                if (mediaInfo && mediaInfo.videoUrl) {
+                    videoUrl = mediaInfo.videoUrl;
+                    productName = mediaInfo.name;
+                    console.log(`✅ Found video from mediaConfig: ${videoUrl}`);
+                }
+            }
+
+            // Final fallback to hardcoded videoIds
+            if (!videoUrl) {
+                const fallbackVideoId = this.getFallbackVideoId(productId);
+                if (fallbackVideoId) {
+                    videoUrl = `https://www.youtube.com/watch?v=${fallbackVideoId}`;
+                    productName = this.getProductNameFromPage(productId) || `Producto ${productId}`;
+                    console.log(`✅ Using fallback video: ${videoUrl}`);
+                }
+            }
+
+            if (videoUrl) {
+                // Open YouTube video directly in new tab
+                console.log(`🚀 Opening YouTube video: ${videoUrl}`);
+                window.open(videoUrl, '_blank');
+                this.showProductMessage(productId, '📺 Abriendo tutorial en YouTube...', 'success');
+            } else {
+                this.showProductMessage(productId, 'Tutorial no disponible para este producto', 'error');
+                console.error(`❌ No video found for product ${productId}`);
             }
         } catch (error) {
             console.error('❌ Error opening tutorial:', error);
@@ -264,7 +282,7 @@ class ProductController {
             const top = Math.round((screenHeight - popupHeight) / 2);
 
             // Build URL with parameters
-            const baseUrl = '/CisnetPOS/frontend/video-tutorial.html';
+            const baseUrl = 'video-tutorial.html';
             const params = new URLSearchParams({
                 productId: productId,
                 productName: productName,

@@ -500,7 +500,7 @@ class CartController {
                         <p style="font-size: 1.2rem; color: #666; margin-bottom: 2rem;">
                             Tu pago ha sido procesado correctamente
                         </p>
-                        
+
                         <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin: 2rem 0; text-align: left;">
                             <h3 style="margin-top: 0;">📋 Resumen de la Compra</h3>
                             ${itemsList}
@@ -511,7 +511,7 @@ class CartController {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div style="background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 1rem; border-radius: 8px; margin: 2rem 0;">
                             <h4 style="margin-top: 0;">🎉 ¡Productos Desbloqueados!</h4>
                             <p style="margin: 0;">
@@ -519,15 +519,35 @@ class CartController {
                                 Ve al catálogo de productos para encontrar tus enlaces de descarga.
                             </p>
                         </div>
-                        
-                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+
+                        <!-- Sección principal para descarga de comprobante -->
+                        <div style="background: #fff3cd; border: 2px solid #ffeaa7; color: #856404; padding: 2rem; border-radius: 8px; margin: 2rem 0; text-align: center;">
+                            <h2 style="margin-top: 0; color: #856404; font-size: 1.5rem;">📋 ¿Deseas descargar tu comprobante de pago?</h2>
+                            <p style="margin-bottom: 2rem; font-size: 1.2rem; color: #6c5700;">
+                                <strong>Tómate el tiempo que necesites.</strong><br>
+                                Esta ventana permanecerá abierta hasta que decidas cerrarla.
+                            </p>
+
+                            <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem;">
+                                <button onclick="window.cartController.downloadReceipt('${data.data.id}', ${JSON.stringify(items).replace(/"/g, '&quot;')}, ${total})"
+                                        class="btn" style="background: linear-gradient(45deg, #28a745, #20c997); color: white; font-weight: 700; padding: 15px 30px; font-size: 1.2rem; border-radius: 8px; box-shadow: 0 3px 10px rgba(40,167,69,0.3);">
+                                    📄 SÍ, Descargar Comprobante
+                                </button>
+                                <button onclick="window.cartController.closeConfirmationScreen()"
+                                        class="btn" style="background: linear-gradient(45deg, #6c757d, #495057); color: white; font-weight: 700; padding: 15px 30px; font-size: 1.2rem; border-radius: 8px;">
+                                    ❌ No, Solo Continuar
+                                </button>
+                            </div>
+
+                            <p style="margin: 0; font-size: 0.95rem; color: #856404; font-style: italic;">
+                                💡 Recuerda: Siempre puedes acceder a esta información desde "Ver Mis Descargas"
+                            </p>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem; border-top: 1px solid #dee2e6; padding-top: 2rem;">
                             <button onclick="window.viewManager.loadView('products/list')" class="btn"
                                     style="background: linear-gradient(45deg, #007bff, #6f42c1); color: white; font-weight: 600;">
                                 📥 Ver Mis Descargas
-                            </button>
-                            <button onclick="window.cartController.downloadReceipt('${data.data.id}', ${JSON.stringify(items).replace(/"/g, '&quot;')}, ${total})" class="btn"
-                                    style="background: linear-gradient(45deg, #28a745, #20c997); color: white; font-weight: 600;">
-                                📄 Descargar Comprobante
                             </button>
                             <button onclick="window.viewManager.loadView('shared/home')" class="btn">
                                 🏠 Ir a Inicio
@@ -535,6 +555,12 @@ class CartController {
                             <button onclick="window.print()" class="btn">
                                 🖨️ Imprimir Recibo
                             </button>
+                        </div>
+
+                        <div style="margin-top: 2rem; padding: 1rem; background: #e8f5e8; border-radius: 8px; border-left: 4px solid #28a745;">
+                            <p style="margin: 0; color: #155724; font-size: 0.95rem;">
+                                ✨ <strong>Importante:</strong> Esta pantalla no se cerrará automáticamente. Puedes tomar todo el tiempo que necesites.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -985,6 +1011,26 @@ class CartController {
 
         // Volver a mostrar el formulario de pago
         this.showPaymentForm();
+    }
+
+    // Función para cerrar la pantalla de confirmación sin descargar comprobante
+    closeConfirmationScreen() {
+        // Mostrar mensaje de confirmación con opciones claras
+        const confirmation = confirm(
+            '¿Estás seguro de que no quieres descargar el comprobante de pago?\n\n' +
+            '✅ Podrás acceder a él más tarde desde "Ver Mis Descargas"\n' +
+            '✅ También puedes imprimirlo desde esta página\n\n' +
+            'Presiona OK para continuar sin descargar, o Cancelar para quedarte aquí.'
+        );
+
+        if (confirmation) {
+            // Redirigir a la página de productos (mis descargas)
+            console.log('🏠 User chose to continue without downloading receipt');
+            window.viewManager.loadView('products/list');
+        } else {
+            // Si no confirma, se queda en la pantalla actual
+            console.log('📋 User chose to stay on confirmation screen');
+        }
     }
 }
 

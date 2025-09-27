@@ -47,7 +47,7 @@ module.exports = (req, res) => {
             image_url: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=300',
             featured: true,
             active: true,
-            videoId: 'Q7YvKOQ7ROQ'
+            videoId: 'dQw4w9WgXcQ'
         },
         {
             id: '2',
@@ -58,7 +58,7 @@ module.exports = (req, res) => {
             image_url: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=300',
             featured: true,
             active: true,
-            videoId: 'FdHqjhYNW8Q'
+            videoId: 'kJQP7kiw5Fk'
         },
         {
             id: '3',
@@ -69,7 +69,7 @@ module.exports = (req, res) => {
             image_url: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=300',
             featured: false,
             active: true,
-            videoId: 'pQ7YvKOQ7ROQ'
+            videoId: 'kJQP7kiw5Fk'
         },
         {
             id: '7',
@@ -80,7 +80,7 @@ module.exports = (req, res) => {
             image_url: 'https://images.unsplash.com/photo-1633613286991-611fe299c4be?w=300',
             featured: true,
             active: true,
-            videoId: 'YsKA18WqBKw'
+            videoId: 'OlJydEEKa5g'
         },
         {
             id: '8',
@@ -91,7 +91,7 @@ module.exports = (req, res) => {
             image_url: 'https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=300',
             featured: true,
             active: true,
-            videoId: 'wAxdwVtewuE'
+            videoId: 'IyR_uYsRdPs'
         },
         {
             id: '9',
@@ -102,7 +102,7 @@ module.exports = (req, res) => {
             image_url: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=300',
             featured: true,
             active: true,
-            videoId: 'qvQNgur2KCI'
+            videoId: 'VqCgcpAypFQ'
         },
         {
             id: '10',
@@ -113,7 +113,7 @@ module.exports = (req, res) => {
             image_url: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=300',
             featured: false,
             active: true,
-            videoId: 'tP4n4WBBNeY'
+            videoId: 'xzpndHX8R9E'
         },
         {
             id: '11',
@@ -124,7 +124,7 @@ module.exports = (req, res) => {
             image_url: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=300',
             featured: false,
             active: true,
-            videoId: 'uilGYrBNV3g'
+            videoId: 'f1DgA06aRjQ'
         },
         {
             id: '12',
@@ -135,7 +135,7 @@ module.exports = (req, res) => {
             image_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300',
             featured: true,
             active: true,
-            videoId: 'MmB9b5njVbA'
+            videoId: 'H2X61VKTU8o'
         },
         {
             id: '13',
@@ -146,7 +146,7 @@ module.exports = (req, res) => {
             image_url: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=300',
             featured: false,
             active: true,
-            videoId: '2HKvK6prfbc'
+            videoId: 'Lbfe3-v1_fY'
         },
         {
             id: '14',
@@ -157,7 +157,7 @@ module.exports = (req, res) => {
             image_url: 'https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?w=300',
             featured: false,
             active: true,
-            videoId: 'V1MGCyJsXVo'
+            videoId: 'vFhAEoCF7jg'
         },
         {
             id: '15',
@@ -168,7 +168,7 @@ module.exports = (req, res) => {
             image_url: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=300',
             featured: true,
             active: true,
-            videoId: '1WjQdmf2BMg'
+            videoId: 'w8QJy8lG5AY'
         },
         {
             id: '16',
@@ -190,7 +190,7 @@ module.exports = (req, res) => {
             image_url: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300',
             featured: false,
             active: true,
-            videoId: 'QpWABxd18tQ'
+            videoId: 'KrtyypDK-0s'
         },
         {
             id: '18',
@@ -201,7 +201,7 @@ module.exports = (req, res) => {
             image_url: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300',
             featured: false,
             active: true,
-            videoId: 'wX75Z-4MEoM'
+            videoId: 'RGrbV6BZ9kw'
         }
     ];
 

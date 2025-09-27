@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial - CisNet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .video-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .video-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .video-info {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .video-info h2 {
+            color: white;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .video-info p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+        }
+
+        .video-frame {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .video-frame iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .error {
+            text-align: center;
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .error h3 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .error p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .footer {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 1.2rem;
+            }
+
+            .video-wrapper {
+                margin: 1rem;
+                padding: 1rem;
+            }
+
+            .video-info h2 {
+                font-size: 1.4rem;
+            }
+        }
+
+        /* Animation */
+        .video-wrapper {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 id="product-title">📺 Tutorial - CisNet</h1>
+        <button class="close-btn" onclick="window.close()">✕ Cerrar</button>
+    </div>
+
+    <div class="video-container">
+        <div class="video-wrapper">
+            <div class="video-info">
+                <h2 id="video-title">Cargando tutorial...</h2>
+                <p id="video-description">Preparando el contenido del video</p>
+            </div>
+
+            <div id="video-content" class="loading">
+                <div>🔄 Cargando tutorial...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>💡 Puedes usar la tecla <strong>Esc</strong> para cerrar esta ventana</p>
+    </div>
+
+    <script>
+        // Get URL parameters
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Convert YouTube URL to embeddable format
+        function getEmbedUrl(videoUrl) {
+            try {
+                // Handle different YouTube URL formats
+                let videoId = null;
+
+                if (videoUrl.includes('youtube.com/watch?v=')) {
+                    const url = new URL(videoUrl);
+                    videoId = url.searchParams.get('v');
+                } else if (videoUrl.includes('youtu.be/')) {
+                    videoId = videoUrl.split('youtu.be/')[1].split('?')[0];
+                } else if (videoUrl.includes('youtube.com/embed/')) {
+                    videoId = videoUrl.split('youtube.com/embed/')[1].split('?')[0];
+                }
+
+                if (videoId) {
+                    return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&showinfo=0`;
+                }
+
+                // If not YouTube, return original URL (for other video platforms)
+                return videoUrl;
+            } catch (error) {
+                console.error('Error processing video URL:', error);
+                return null;
+            }
+        }
+
+        // Load video content
+        function loadVideo() {
+            const productId = getUrlParameter('productId');
+            const productName = getUrlParameter('productName');
+            const videoUrl = getUrlParameter('videoUrl');
+
+            console.log('📺 Loading tutorial:', { productId, productName, videoUrl });
+
+            // Update page title and headers
+            if (productName) {
+                document.getElementById('product-title').textContent = `📺 Tutorial - ${productName}`;
+                document.getElementById('video-title').textContent = `Tutorial: ${productName}`;
+                document.getElementById('video-description').textContent = `Aprende a usar ${productName} paso a paso`;
+                document.title = `Tutorial - ${productName}`;
+            }
+
+            if (!videoUrl) {
+                showError('No se proporcionó URL del video', 'Por favor verifica que el producto tenga un tutorial asociado.');
+                return;
+            }
+
+            const embedUrl = getEmbedUrl(videoUrl);
+            if (!embedUrl) {
+                showError('URL de video inválida', 'No se pudo procesar la URL del tutorial. Por favor contacta al soporte.');
+                return;
+            }
+
+            // Create video iframe
+            const videoContent = document.getElementById('video-content');
+            videoContent.innerHTML = `
+                <div class="video-frame">
+                    <iframe
+                        src="${embedUrl}"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            `;
+
+            console.log('✅ Tutorial loaded successfully');
+        }
+
+        // Show error message
+        function showError(title, message) {
+            const videoContent = document.getElementById('video-content');
+            videoContent.innerHTML = `
+                <div class="error">
+                    <h3>⚠️ ${title}</h3>
+                    <p>${message}</p>
+                    <button class="close-btn" onclick="window.close()" style="margin-top: 1rem;">
+                        Cerrar Ventana
+                    </button>
+                </div>
+            `;
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                window.close();
+            }
+        });
+
+        // Load video when page loads
+        document.addEventListener('DOMContentLoaded', loadVideo);
+
+        // Handle window close
+        window.addEventListener('beforeunload', function() {
+            console.log('🚪 Tutorial window closing...');
+        });
+
+        // Log for debugging
+        console.log('🎬 Video Tutorial Page Initialized');
+        console.log('📋 URL Parameters:', {
+            productId: getUrlParameter('productId'),
+            productName: getUrlParameter('productName'),
+            videoUrl: getUrlParameter('videoUrl')
+        });
+    </script>
+</body>
+</html>

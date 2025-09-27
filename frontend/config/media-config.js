@@ -14,7 +14,7 @@ class MediaConfig {
                 zipUrl: null, // Será proporcionado por el backend según permisos del usuario
                 isExternalUrl: true,
                 requiresPermission: true,
-                videoId: 'Q7YvKOQ7ROQ', // Tutorial de Facturación Electrónica
+                videoId: 'dQw4w9WgXcQ', // Tutorial de Facturación Electrónica (demo)
                 videoUrl: null
             },
             2: {
@@ -23,7 +23,7 @@ class MediaConfig {
                 zipUrl: null, // Será proporcionado por el backend según permisos del usuario
                 isExternalUrl: true,
                 requiresPermission: true,
-                videoId: 'FdHqjhYNW8Q', // Tutorial de Punto de Venta
+                videoId: 'kJQP7kiw5Fk', // Tutorial de Punto de Venta
                 videoUrl: null
             },
             3: {
@@ -32,7 +32,7 @@ class MediaConfig {
                 zipUrl: null, // Será proporcionado por el backend según permisos del usuario
                 isExternalUrl: true,
                 requiresPermission: true,
-                videoId: 'pQ7YvKOQ7ROQ', // Tutorial de Control de Inventarios
+                videoId: 'kJQP7kiw5Fk', // Tutorial de Control de Inventarios
                 videoUrl: null
             },
             7: {
@@ -41,7 +41,7 @@ class MediaConfig {
                 zipUrl: 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi',
                 isExternalUrl: true,
                 requiresPermission: true,
-                videoId: 'YsKA18WqBKw', // Microsoft Office 365 Tutorial
+                videoId: 'OlJydEEKa5g', // Microsoft Office 365 Tutorial
                 videoUrl: null
             },
             8: {
@@ -50,7 +50,7 @@ class MediaConfig {
                 zipUrl: 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi',
                 isExternalUrl: true,
                 requiresPermission: true,
-                videoId: 'wAxdwVtewuE', // Photoshop Tutorial for Beginners
+                videoId: 'IyR_uYsRdPs', // Photoshop Tutorial for Beginners
                 videoUrl: null
             },
             9: {
@@ -59,7 +59,7 @@ class MediaConfig {
                 zipUrl: 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi',
                 isExternalUrl: true,
                 requiresPermission: true,
-                videoId: 'qvQNgur2KCI', // VS Code Tutorial for Beginners
+                videoId: 'VqCgcpAypFQ', // VS Code Tutorial for Beginners
                 videoUrl: null
             },
             10: {
@@ -68,7 +68,7 @@ class MediaConfig {
                 zipUrl: 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi',
                 isExternalUrl: true,
                 requiresPermission: true,
-                videoId: 'tP4n4WBBNeY', // Windows 11 New Features
+                videoId: 'xzpndHX8R9E', // Windows 11 New Features
                 videoUrl: null
             },
             11: {
@@ -77,7 +77,7 @@ class MediaConfig {
                 zipUrl: 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi',
                 isExternalUrl: true,
                 requiresPermission: true,
-                videoId: 'uilGYrBNV3g', // AutoCAD Complete Tutorial
+                videoId: 'f1DgA06aRjQ', // AutoCAD Complete Tutorial
                 videoUrl: null
             },
             12: {
@@ -86,7 +86,7 @@ class MediaConfig {
                 zipUrl: 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi',
                 isExternalUrl: true,
                 requiresPermission: true,
-                videoId: 'MmB9b5njVbA', // Minecraft Beginner's Guide
+                videoId: 'H2X61VKTU8o', // Minecraft Beginner's Guide
                 videoUrl: null
             },
             13: {
@@ -95,7 +95,7 @@ class MediaConfig {
                 zipUrl: 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi',
                 isExternalUrl: true,
                 requiresPermission: true,
-                videoId: '2HKvK6prfbc', // Norton 360 Setup Guide
+                videoId: 'Lbfe3-v1_fY', // Norton 360 Setup Guide
                 videoUrl: null
             },
             14: {
@@ -104,7 +104,7 @@ class MediaConfig {
                 zipUrl: 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi',
                 isExternalUrl: true,
                 requiresPermission: true,
-                videoId: 'V1MGCyJsXVo', // How to Use Zoom
+                videoId: 'vFhAEoCF7jg', // How to Use Zoom
                 videoUrl: null
             },
             15: {
@@ -113,7 +113,7 @@ class MediaConfig {
                 zipUrl: 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi',
                 isExternalUrl: true,
                 requiresPermission: true,
-                videoId: '1WjQdmf2BMg', // Adobe Creative Suite Overview
+                videoId: 'w8QJy8lG5AY', // Adobe Creative Suite Overview
                 videoUrl: null
             },
             16: {
@@ -131,7 +131,7 @@ class MediaConfig {
                 zipUrl: 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi',
                 isExternalUrl: true,
                 requiresPermission: true,
-                videoId: 'QpWABxd18tQ', // Spotify Premium Features
+                videoId: 'KrtyypDK-0s', // Spotify Premium Features
                 videoUrl: null
             },
             18: {
@@ -140,7 +140,7 @@ class MediaConfig {
                 zipUrl: 'https://drive.google.com/drive/u/1/folders/1kd8JnMTxAyCpNfNEcsaQ8cU2KyDnzqHi',
                 isExternalUrl: true,
                 requiresPermission: true,
-                videoId: 'wX75Z-4MEoM', // VMware Workstation Tutorial
+                videoId: 'RGrbV6BZ9kw', // VMware Workstation Tutorial
                 videoUrl: null
             }
         };

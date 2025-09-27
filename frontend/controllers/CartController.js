@@ -421,8 +421,13 @@ class CartController {
                 return;
             }
 
-            // Llamar al backend para crear la orden y insertar permisos
-            const token = localStorage.getItem('authToken');
+            // Verificar que el usuario esté autenticado
+            if (!this.cartModel.user.isAuthenticated()) {
+                this.showMessage('Error: Debes iniciar sesión para completar la compra', 'error');
+                return;
+            }
+
+            const token = this.cartModel.user.token;
             if (!token) {
                 this.showMessage('Error: No hay sesión activa', 'error');
                 return;

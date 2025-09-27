@@ -344,7 +344,7 @@ class ProductController {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${window.app.user.token}`
+                    'Authorization': `Bearer ${window.app.user.token || localStorage.getItem('cisnet_token')}`
                 },
                 body: JSON.stringify({ productId })
             });

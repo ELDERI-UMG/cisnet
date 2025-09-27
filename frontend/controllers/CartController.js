@@ -529,7 +529,7 @@ class CartController {
                                     style="background: linear-gradient(45deg, #007bff, #6f42c1); color: white; font-weight: 600;">
                                 📥 Ver Mis Descargas
                             </button>
-                            <button onclick="window.cartController.downloadReceipt('${order.id}', ${JSON.stringify(items).replace(/"/g, '&quot;')}, ${total})" class="btn"
+                            <button onclick="window.cartController.downloadReceipt('${data.data.id}', ${JSON.stringify(items).replace(/"/g, '&quot;')}, ${total})" class="btn"
                                     style="background: linear-gradient(45deg, #28a745, #20c997); color: white; font-weight: 600;">
                                 📄 Descargar Comprobante
                             </button>

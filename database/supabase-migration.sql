@@ -65,6 +65,12 @@ CREATE TABLE IF NOT EXISTS purchase_items (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Insertar usuario administrador (password: 123456)
+-- La contraseña ya está hasheada con bcrypt
+INSERT INTO users (username, email, password, created_at) VALUES
+('Eddy Alexander', 'eddy@cisnet.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NOW())
+ON CONFLICT (email) DO NOTHING;
+
 -- Insertar productos de ejemplo
 INSERT INTO products (name, description, price, category, image_url, download_url, file_size, version, requirements, featured) VALUES
 ('Microsoft Office 365', 'Suite completa de productividad con Word, Excel, PowerPoint y más', 99.99, 'Productividad', 'https://images.unsplash.com/photo-1633613286991-611fe299c4be?w=300', '#', '4.2 GB', '2024', 'Windows 10/11, 4GB RAM', true),
@@ -78,7 +84,10 @@ INSERT INTO products (name, description, price, category, image_url, download_ur
 ('Spotify Premium', 'Música ilimitada sin anuncios', 9.99, 'Entretenimiento', 'https://images.unsplash.com/photo-1611339555312-e607c8352fd7?w=300', '#', '100 MB', 'Latest', 'Cualquier dispositivo', false),
 ('Zoom Pro', 'Plataforma de videoconferencias profesional', 14.99, 'Comunicación', 'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=300', '#', '150 MB', '5.17', 'Windows/Mac/Linux, cámara web', false),
 ('VMware Workstation', 'Virtualización para escritorio', 249.99, 'Virtualización', 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300', '#', '600 MB', '17.0', 'Windows/Linux, 8GB RAM', false),
-('Minecraft Java Edition', 'Juego de construcción y aventura', 26.95, 'Videojuegos', 'https://images.unsplash.com/photo-1606040906485-26bb2c99671a?w=300', '#', '1 GB', '1.20', 'Java 8+, 4GB RAM', true);
+('Minecraft Java Edition', 'Juego de construcción y aventura', 26.95, 'Videojuegos', 'https://images.unsplash.com/photo-1606040906485-26bb2c99671a?w=300', '#', '1 GB', '1.20', 'Java 8+, 4GB RAM', true),
+('Sistema de Facturación', 'Software completo de facturación electrónica', 299.99, 'Software', 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=300', '#', '2.5 GB', '2024', 'Windows 10/11, 4GB RAM', false),
+('Sistema POS', 'Punto de venta integrado', 199.99, 'Software', 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=300', '#', '1.8 GB', '2024', 'Windows 10/11, 4GB RAM', true),
+('Sistema de Inventarios', 'Control de stock y almacén', 149.99, 'Software', 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=300', '#', '1.2 GB', '2024', 'Windows 10/11, 2GB RAM', false);
 
 -- Crear políticas RLS (Row Level Security)
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;

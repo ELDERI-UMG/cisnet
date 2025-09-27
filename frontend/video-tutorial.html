@@ -51,6 +51,17 @@
             transform: translateY(-1px);
         }
 
+        #youtube-btn {
+            background: #ff0000 !important;
+            color: white !important;
+        }
+
+        #youtube-btn:hover {
+            background: #cc0000 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(255, 0, 0, 0.3);
+        }
+
         .video-container {
             flex: 1;
             display: flex;
@@ -183,7 +194,13 @@
 <body>
     <div class="header">
         <h1 id="product-title">📺 Tutorial - CisNet</h1>
-        <button class="close-btn" onclick="window.close()">✕ Cerrar</button>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <button id="youtube-btn" class="close-btn" onclick="openInYouTube()"
+                    style="background: #ff0000; color: white;">
+                🎬 Ver en YouTube
+            </button>
+            <button class="close-btn" onclick="window.close()">✕ Cerrar</button>
+        </div>
     </div>
 
     <div class="video-container">
@@ -191,6 +208,12 @@
             <div class="video-info">
                 <h2 id="video-title">Cargando tutorial...</h2>
                 <p id="video-description">Preparando el contenido del video</p>
+                <div style="background: rgba(255, 255, 255, 0.1); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    <p style="margin: 0; font-size: 0.9rem; color: rgba(255, 255, 255, 0.9);">
+                        🎬 <strong>Opción 1:</strong> Ver aquí embebido |
+                        🔗 <strong>Opción 2:</strong> Botón rojo para abrir en YouTube
+                    </p>
+                </div>
             </div>
 
             <div id="video-content" class="loading">
@@ -200,7 +223,7 @@
     </div>
 
     <div class="footer">
-        <p>💡 Puedes usar la tecla <strong>Esc</strong> para cerrar esta ventana</p>
+        <p>💡 Puedes usar la tecla <strong>Esc</strong> para cerrar esta ventana | 🎬 Botón rojo para ver en YouTube</p>
     </div>
 
     <script>
@@ -245,6 +268,9 @@
 
             console.log('📺 Loading tutorial:', { productId, productName, videoUrl });
 
+            // Store original video URL for YouTube button
+            originalVideoUrl = videoUrl;
+
             // Update page title and headers
             if (productName) {
                 document.getElementById('product-title').textContent = `📺 Tutorial - ${productName}`;
@@ -254,6 +280,8 @@
             }
 
             if (!videoUrl) {
+                // Hide YouTube button if no video
+                document.getElementById('youtube-btn').style.display = 'none';
                 showError('No se proporcionó URL del video', 'Por favor verifica que el producto tenga un tutorial asociado.');
                 return;
             }
@@ -308,6 +336,19 @@
         window.addEventListener('beforeunload', function() {
             console.log('🚪 Tutorial window closing...');
         });
+
+        // Global variable to store original video URL
+        let originalVideoUrl = null;
+
+        // Function to open video in YouTube directly
+        function openInYouTube() {
+            if (originalVideoUrl) {
+                console.log('🎬 Opening in YouTube:', originalVideoUrl);
+                window.open(originalVideoUrl, '_blank');
+            } else {
+                console.error('❌ No video URL available');
+            }
+        }
 
         // Log for debugging
         console.log('🎬 Video Tutorial Page Initialized');

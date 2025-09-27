@@ -252,10 +252,9 @@ class ProductController {
             }
 
             if (videoUrl) {
-                // Open YouTube video directly in new tab
-                console.log(`🚀 Opening YouTube video: ${videoUrl}`);
-                window.open(videoUrl, '_blank');
-                this.showProductMessage(productId, '📺 Abriendo tutorial en YouTube...', 'success');
+                // Open video in our custom video player popup
+                this.openVideoPopup(productId, productName, videoUrl);
+                this.showProductMessage(productId, '📺 Abriendo tutorial...', 'success');
             } else {
                 this.showProductMessage(productId, 'Tutorial no disponible para este producto', 'error');
                 console.error(`❌ No video found for product ${productId}`);

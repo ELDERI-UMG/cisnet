@@ -28,7 +28,8 @@ class ProductController {
 
         try {
             // Fetch products from API
-            const response = await fetch('http://localhost:3000/api/products');
+            const apiUrl = `${window.API_CONFIG.baseUrl}${window.API_CONFIG.endpoints.products.list}`;
+            const response = await fetch(apiUrl);
             const data = await response.json();
 
             if (!response.ok || !data.success) {
@@ -339,7 +340,7 @@ class ProductController {
         }
 
         try {
-            const response = await fetch('http://localhost:3000/api/purchases/get-download-url', {
+            const response = await fetch(`${window.API_CONFIG.baseUrl}/api/purchases/get-download-url`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

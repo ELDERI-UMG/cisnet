@@ -541,7 +541,7 @@ class CartController {
             `;
             
             console.log('✅ Purchase completed successfully');
-            console.log('🎁 Products unlocked:', purchasedProducts);
+            console.log('🎁 Products unlocked:', productIds);
             
         } catch (error) {
             console.error('💥 Error completing purchase:', error);

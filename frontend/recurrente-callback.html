@@ -186,8 +186,8 @@
         </div>
     </div>
 
-    <script src="config/api-config.js"></script>
-    <script src="config/supabase-config.js"></script>
+    <script src="config/api-config.js?v=2"></script>
+    <script src="config/supabase-config.js?v=2"></script>
     <script>
         // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
@@ -282,11 +282,19 @@
                 const cartData = JSON.parse(cartDataStr);
 
                 // Check if supabase is available and user is authenticated
+                console.log('🔍 Checking Supabase availability:', {
+                    hasWindow: typeof window !== 'undefined',
+                    hasSupabase: typeof window.supabase !== 'undefined',
+                    hasAuth: window.supabase ? typeof window.supabase.auth !== 'undefined' : false
+                });
+
                 let user = null;
                 try {
                     if (window.supabase && window.supabase.auth) {
                         const { data: { user: authUser } } = await window.supabase.auth.getUser();
                         user = authUser;
+                    } else {
+                        console.warn('⚠️ Supabase not initialized properly');
                     }
                 } catch (authError) {
                     console.warn('⚠️ Could not get authenticated user:', authError);

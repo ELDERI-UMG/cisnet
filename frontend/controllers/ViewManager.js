@@ -360,9 +360,128 @@ class ViewManager {
 
     attachCheckoutEvents() {
         console.log('🛒 Setting up checkout events');
-        
-        // The checkout page initializes itself through inline script
-        // This method can be used for additional event handling if needed
+
+        // Wait for DOM to be ready
+        setTimeout(() => {
+            console.log('🔄 Initializing checkout page');
+            this.initializeCheckout();
+        }, 100);
+    }
+
+    initializeCheckout() {
+        console.log('📊 Available controllers:', {
+            cartController: !!window.cartController,
+            paymentProcessor: !!window.paymentProcessor,
+            paymentConfigController: !!window.paymentConfigController
+        });
+
+        // Load order summary
+        this.loadOrderSummary();
+
+        // Load payment methods
+        this.loadPaymentMethods();
+
+        // Setup form formatting
+        if (window.paymentProcessor) {
+            window.paymentProcessor.setupFormFormatting();
+        }
+    }
+
+    loadOrderSummary() {
+        console.log('📦 Loading order summary...');
+
+        if (!window.cartController) {
+            console.error('❌ CartController not available');
+            const itemsContainer = document.getElementById('checkout-order-items');
+            if (itemsContainer) {
+                itemsContainer.innerHTML = '<p class="error">Error: No se pudo cargar el carrito</p>';
+            }
+            return;
+        }
+
+        const cart = window.cartController.getCart();
+        console.log('🛒 Cart data:', cart);
+
+        const itemsContainer = document.getElementById('checkout-order-items');
+        const subtotalEl = document.getElementById('checkout-subtotal');
+        const taxesEl = document.getElementById('checkout-taxes');
+        const totalEl = document.getElementById('checkout-total');
+
+        if (!cart || !cart.items || cart.items.length === 0) {
+            console.warn('⚠️ Cart is empty');
+            if (itemsContainer) {
+                itemsContainer.innerHTML = '<p class="empty-cart">No hay productos en el carrito</p>';
+            }
+            return;
+        }
+
+        console.log(`✅ Found ${cart.items.length} items in cart`);
+
+        let itemsHTML = '';
+        let subtotal = 0;
+
+        cart.items.forEach(item => {
+            const itemTotal = item.price * item.quantity;
+            subtotal += itemTotal;
+
+            itemsHTML += `
+                <div class="order-item">
+                    <div class="item-info">
+                        <h4>${item.name}</h4>
+                        <span class="item-quantity">Cantidad: ${item.quantity}</span>
+                    </div>
+                    <div class="item-price">$${itemTotal.toFixed(2)}</div>
+                </div>
+            `;
+        });
+
+        const taxes = subtotal * 0.12; // 12% tax
+        const total = subtotal + taxes;
+
+        if (itemsContainer) itemsContainer.innerHTML = itemsHTML;
+        if (subtotalEl) subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+        if (taxesEl) taxesEl.textContent = `$${taxes.toFixed(2)}`;
+        if (totalEl) totalEl.textContent = `$${total.toFixed(2)}`;
+
+        console.log('✅ Order summary loaded successfully');
+    }
+
+    loadPaymentMethods() {
+        console.log('💳 Loading payment methods...');
+        const container = document.getElementById('payment-methods-container');
+
+        if (!window.paymentProcessor) {
+            console.error('❌ PaymentProcessor not available');
+            if (container) {
+                container.innerHTML = '<p class="error">Error: PaymentProcessor no está disponible</p>';
+            }
+            return;
+        }
+
+        console.log('✅ PaymentProcessor available');
+
+        // Load active payment gateways
+        window.paymentProcessor.loadActiveGateways();
+        console.log('🔌 Active gateways:', window.paymentProcessor.activeGateways);
+
+        // Generate payment options HTML
+        const html = window.paymentProcessor.generatePaymentOptionsHTML();
+        console.log('📝 Generated HTML length:', html.length);
+
+        if (container) {
+            container.innerHTML = html;
+        }
+
+        // Show checkout actions if payment methods are available
+        if (window.paymentProcessor.activeGateways && window.paymentProcessor.activeGateways.length > 0) {
+            const actionsEl = document.getElementById('checkout-actions');
+            if (actionsEl) {
+                actionsEl.style.display = 'flex';
+            }
+            console.log(`✅ Loaded ${window.paymentProcessor.activeGateways.length} payment methods`);
+        } else {
+            console.warn('⚠️ No active payment gateways found');
+        }
     }
 
     attachAboutEvents() {

@@ -256,7 +256,7 @@
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const sessionId = urlParams.get('session');
+        const sessionId = urlParams.get('session_id') || urlParams.get('session');
         let selectedMethod = null;
 
         function selectPaymentMethod(method) {
@@ -312,6 +312,12 @@
         // Log session info
         console.log('🇬🇹 Recurrente Checkout Simulator');
         console.log('Session ID:', sessionId);
+
+        // Validate session ID
+        if (!sessionId || sessionId === 'null' || sessionId === 'undefined') {
+            alert('Error: No se proporcionó un ID de sesión válido');
+            console.error('❌ Invalid session ID:', sessionId);
+        }
     </script>
 </body>
 </html>

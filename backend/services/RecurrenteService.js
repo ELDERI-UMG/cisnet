@@ -78,9 +78,13 @@ class RecurrenteService {
                 throw new Error('Success and cancel URLs are required');
             }
 
-            // Preparar el payload para Recurrente
-            const payload = {
-                amount: Math.round(amount * 100), // Recurrente usa centavos
+            // Generar un session ID único
+            const sessionId = `rec_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+            // Preparar datos de la sesión
+            const sessionData = {
+                id: sessionId,
+                amount: Math.round(amount * 100), // En centavos
                 currency: currency.toUpperCase(),
                 description: this.generateDescription(products),
                 customer: {
@@ -94,35 +98,40 @@ class RecurrenteService {
                     products: JSON.stringify(products.map(p => ({
                         id: p.id,
                         name: p.name,
-                        quantity: p.quantity || 1
+                        quantity: p.quantity || 1,
+                        price: p.price
                     }))),
                     integration: 'cisnet',
                     timestamp: new Date().toISOString()
                 },
-                mode: this.mode
+                mode: this.mode,
+                status: 'pending',
+                payment_status: 'unpaid',
+                created_at: new Date().toISOString()
             };
 
-            console.log('📤 Creating Recurrente checkout session:', {
-                amount: payload.amount,
-                currency: payload.currency,
-                customer: payload.customer.email
+            console.log('📤 Creating checkout session (simulator mode):', {
+                sessionId,
+                amount: sessionData.amount,
+                currency: sessionData.currency,
+                customer: sessionData.customer.email
             });
 
-            // Llamada a la API de Recurrente
-            const response = await this.makeApiRequest('/checkout/sessions', 'POST', payload);
+            // Guardar sesión en memoria global (para test/demo)
+            global.recurrenteSessions = global.recurrenteSessions || {};
+            global.recurrenteSessions[sessionId] = sessionData;
 
-            if (!response.success) {
-                throw new Error(response.error || 'Failed to create checkout session');
-            }
+            // URL del simulador de checkout
+            const checkoutUrl = `${successUrl.split('/recurrente-callback')[0]}/checkout-redirect.html?session_id=${sessionId}`;
 
-            console.log('✅ Checkout session created:', response.data.id);
+            console.log('✅ Checkout session created:', sessionId);
 
             return {
                 success: true,
-                sessionId: response.data.id,
-                checkoutUrl: response.data.url,
-                expiresAt: response.data.expires_at,
-                publicKey: this.publicKey // Necesario para frontend
+                sessionId: sessionId,
+                checkoutUrl: checkoutUrl,
+                expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutos
+                publicKey: this.publicKey
             };
 
         } catch (error) {
@@ -147,13 +156,22 @@ class RecurrenteService {
 
             console.log('🔍 Verifying payment for session:', sessionId);
 
-            const response = await this.makeApiRequest(`/checkout/sessions/${sessionId}`, 'GET');
+            // Buscar sesión en memoria global (modo simulador)
+            global.recurrenteSessions = global.recurrenteSessions || {};
+            const session = global.recurrenteSessions[sessionId];
 
-            if (!response.success) {
-                throw new Error(response.error || 'Failed to verify payment');
+            if (!session) {
+                return {
+                    success: false,
+                    error: 'Session not found'
+                };
             }
 
-            const session = response.data;
+            console.log('✅ Payment verification result:', {
+                sessionId: session.id,
+                status: session.status,
+                paymentStatus: session.payment_status
+            });
 
             return {
                 success: true,
@@ -170,7 +188,10 @@ class RecurrenteService {
 
         } catch (error) {
             console.error('❌ Error verifying payment:', error.message);
-            throw error;
+            return {
+                success: false,
+                error: error.message
+            };
         }
     }
 

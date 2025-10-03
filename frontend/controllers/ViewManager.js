@@ -460,6 +460,9 @@ class ViewManager {
 
         console.log('✅ PaymentProcessor available');
 
+        // Ensure Recurrente is configured before loading gateways
+        this.ensureRecurrenteConfigured();
+
         // Load active payment gateways
         window.paymentProcessor.loadActiveGateways();
         console.log('🔌 Active gateways:', window.paymentProcessor.activeGateways);
@@ -472,6 +475,11 @@ class ViewManager {
             container.innerHTML = html;
         }
 
+        // Setup event listeners for payment method selection
+        setTimeout(() => {
+            this.setupPaymentMethodListeners();
+        }, 100);
+
         // Show checkout actions if payment methods are available
         if (window.paymentProcessor.activeGateways && window.paymentProcessor.activeGateways.length > 0) {
             const actionsEl = document.getElementById('checkout-actions');
@@ -482,6 +490,80 @@ class ViewManager {
         } else {
             console.warn('⚠️ No active payment gateways found');
         }
+    }
+
+    ensureRecurrenteConfigured() {
+        console.log('🔍 Ensuring Recurrente is configured...');
+        
+        let config = localStorage.getItem('paymentConfiguration');
+        
+        if (!config) {
+            console.log('⚙️ No payment configuration found, creating default with Recurrente...');
+            const defaultConfig = {
+                gateways: {
+                    recurrente: {
+                        name: 'Recurrente Guatemala',
+                        enabled: true,
+                        config: {
+                            recurrente_public_key: 'pk_test_uWS5SBTkEnhI1o8f0E1Lyzvfn89Qadqumwkj5e6Gk1BQ8rFNxUMe3IAnK',
+                            recurrente_mode: 'test'
+                        }
+                    },
+                    stripe: { name: 'Stripe', enabled: false, config: {} },
+                    paypal: { name: 'PayPal', enabled: false, config: {} },
+                    neonet: { name: 'Neonet Guatemala', enabled: false, config: {} }
+                },
+                general: {
+                    primary_currency: 'GTQ',
+                    notification_email: 'admin@cisnet.com'
+                }
+            };
+            localStorage.setItem('paymentConfiguration', JSON.stringify(defaultConfig));
+            console.log('✅ Default configuration with Recurrente created');
+        } else {
+            // Verify Recurrente is enabled
+            try {
+                const parsedConfig = JSON.parse(config);
+                if (!parsedConfig.gateways?.recurrente?.enabled) {
+                    console.log('⚙️ Enabling Recurrente in existing configuration...');
+                    parsedConfig.gateways.recurrente = {
+                        name: 'Recurrente Guatemala',
+                        enabled: true,
+                        config: {
+                            recurrente_public_key: 'pk_test_uWS5SBTkEnhI1o8f0E1Lyzvfn89Qadqumwkj5e6Gk1BQ8rFNxUMe3IAnK',
+                            recurrente_mode: 'test'
+                        }
+                    };
+                    localStorage.setItem('paymentConfiguration', JSON.stringify(parsedConfig));
+                    console.log('✅ Recurrente enabled in configuration');
+                }
+            } catch (error) {
+                console.error('❌ Error parsing payment configuration:', error);
+            }
+        }
+    }
+
+    setupPaymentMethodListeners() {
+        console.log('🎧 Setting up payment method listeners...');
+        const paymentCards = document.querySelectorAll('.payment-method-card');
+        
+        paymentCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const gateway = card.dataset.gateway;
+                console.log('💳 Payment method clicked:', gateway);
+                
+                // Remove selected class from all cards
+                paymentCards.forEach(c => c.classList.remove('selected'));
+                
+                // Add selected class to clicked card
+                card.classList.add('selected');
+                
+                // Update selected gateway in PaymentProcessor
+                if (window.paymentProcessor) {
+                    window.paymentProcessor.selectPaymentMethod(gateway);
+                }
+            });
+        });
     }
 
     attachAboutEvents() {

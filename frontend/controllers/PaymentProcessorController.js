@@ -86,24 +86,32 @@ class PaymentProcessorController {
     
     getGatewayIcon(gatewayType) {
         const icons = {
+            recurrente: '<div class="gateway-icon recurrente-icon">🇬🇹</div>',
             stripe: '<div class="gateway-icon stripe-icon">💳</div>',
             paypal: '<div class="gateway-icon paypal-icon">💙</div>',
-            neonet: '<div class="gateway-icon neonet-icon">🇬🇹</div>'
+            neonet: '<div class="gateway-icon neonet-icon">🏦</div>'
         };
         return icons[gatewayType] || '<div class="gateway-icon">💰</div>';
     }
-    
+
     getGatewayDescription(gatewayType) {
         const descriptions = {
+            recurrente: 'Pasarela de pagos líder en Guatemala',
             stripe: 'Pago seguro con tarjeta de crédito/débito',
             paypal: 'Paga con tu cuenta PayPal o tarjeta',
             neonet: 'Pago local para Guatemala con bancos nacionales'
         };
         return descriptions[gatewayType] || 'Método de pago seguro';
     }
-    
+
     getGatewayFeatures(gatewayType) {
         const features = {
+            recurrente: `
+                <span class="feature">✅ Visa, Mastercard, Transferencias</span>
+                <span class="feature">🇬🇹 Pagos en Quetzales (GTQ)</span>
+                <span class="feature">⚡ Dinero en 24 horas</span>
+                <span class="feature">🔒 100% Seguro</span>
+            `,
             stripe: `
                 <span class="feature">✅ Visa, MasterCard, American Express</span>
                 <span class="feature">🔒 Encriptación SSL</span>
@@ -174,6 +182,9 @@ class PaymentProcessorController {
         form.className = 'payment-form';
         
         switch (gatewayType) {
+            case 'recurrente':
+                form.innerHTML = this.createRecurrenteForm();
+                break;
             case 'stripe':
                 form.innerHTML = this.createStripeForm();
                 break;
@@ -186,8 +197,84 @@ class PaymentProcessorController {
             default:
                 form.innerHTML = '<p>Formulario de pago no disponible</p>';
         }
-        
+
         return form;
+    }
+
+    createRecurrenteForm() {
+        return `
+            <div class="gateway-form recurrente-form">
+                <div class="form-header">
+                    <h4>🇬🇹 Pago con Recurrente Guatemala</h4>
+                    <p>Serás redirigido a Recurrente para completar tu pago de forma segura</p>
+                </div>
+
+                <div class="recurrente-checkout-container">
+                    <div class="recurrente-benefits">
+                        <div class="benefit">
+                            <span class="benefit-icon">🏦</span>
+                            <span>Pagos con Visa, Mastercard y Transferencias</span>
+                        </div>
+                        <div class="benefit">
+                            <span class="benefit-icon">🇬🇹</span>
+                            <span>Especializado en Guatemala - Quetzales (GTQ)</span>
+                        </div>
+                        <div class="benefit">
+                            <span class="benefit-icon">⚡</span>
+                            <span>Dinero disponible en 24 horas</span>
+                        </div>
+                        <div class="benefit">
+                            <span class="benefit-icon">🔒</span>
+                            <span>Certificado PCI - Protección antifraude</span>
+                        </div>
+                    </div>
+
+                    <form id="recurrente-checkout-form" class="checkout-form">
+                        <div class="form-group">
+                            <label>Email de Confirmación</label>
+                            <input type="email" id="recurrente-email" placeholder="tu@email.com" required>
+                            <small>Te enviaremos la confirmación de compra a este email</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nombre Completo</label>
+                            <input type="text" id="recurrente-name" placeholder="Nombre completo" required>
+                            <small>Nombre para la factura</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Teléfono (Opcional)</label>
+                            <input type="tel" id="recurrente-phone" placeholder="+502 1234-5678">
+                        </div>
+
+                        <div class="recurrente-info">
+                            <div class="info-card">
+                                <h5>💳 Métodos de Pago Disponibles</h5>
+                                <ul>
+                                    <li><strong>Tarjetas:</strong> Visa y Mastercard</li>
+                                    <li><strong>Transferencias:</strong> Bancos guatemaltecos</li>
+                                    <li><strong>Comisión:</strong> 4.5% + Q2 por transacción</li>
+                                </ul>
+                            </div>
+
+                            <div class="security-info">
+                                <h5>🔒 Seguridad</h5>
+                                <p>Recurrente es una plataforma certificada PCI-DSS con protección antifraude y 3D Secure en cada transacción. Tus datos están completamente seguros.</p>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="window.paymentProcessor.cancelPayment()">
+                                ❌ Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-large recurrente-btn">
+                                🇬🇹 Continuar a Recurrente
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
     }
     
     createStripeForm() {
@@ -385,6 +472,8 @@ class PaymentProcessorController {
         console.log(`💳 Processing payment with ${gateway.name}...`);
         
         switch (this.selectedGateway) {
+            case 'recurrente':
+                return await this.processRecurrentePayment(cartData, gateway.config);
             case 'stripe':
                 return await this.processStripePayment(cartData, gateway.config);
             case 'paypal':
@@ -393,6 +482,74 @@ class PaymentProcessorController {
                 return await this.processNeonetPayment(cartData, gateway.config);
             default:
                 throw new Error(`Gateway ${this.selectedGateway} not implemented`);
+        }
+    }
+
+    async processRecurrentePayment(cartData, config) {
+        try {
+            // Get form data
+            const formData = this.getRecurrenteFormData();
+
+            console.log('🇬🇹 Processing Recurrente payment...', formData);
+
+            // Prepare products data
+            const products = cartData.items.map(item => ({
+                id: item.product_id || item.id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity || 1
+            }));
+
+            // Convert to GTQ (approximate rate: 1 USD = 7.8 GTQ)
+            const amountGTQ = Math.round(cartData.total * 7.8 * 100) / 100;
+
+            // Create checkout session in backend
+            const apiUrl = `${window.API_CONFIG.baseUrl}/api/recurrente/create-session`;
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    products: products,
+                    amount: amountGTQ,
+                    currency: 'GTQ',
+                    customerEmail: formData.email,
+                    customerName: formData.name,
+                    metadata: {
+                        phone: formData.phone,
+                        cartId: Date.now().toString(),
+                        source: 'cisnet-checkout'
+                    }
+                })
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error(data.error || 'Error al crear sesión de pago');
+            }
+
+            console.log('✅ Recurrente checkout session created:', data.data.sessionId);
+
+            // Store session ID for callback
+            sessionStorage.setItem('recurrente_session_id', data.data.sessionId);
+            sessionStorage.setItem('recurrente_cart_data', JSON.stringify(cartData));
+
+            // Redirect to Recurrente checkout
+            window.location.href = data.data.checkoutUrl;
+
+            // Return pending status (actual completion happens on callback)
+            return {
+                success: true,
+                pending: true,
+                redirecting: true,
+                sessionId: data.data.sessionId
+            };
+
+        } catch (error) {
+            console.error('❌ Recurrente payment error:', error);
+            throw error;
         }
     }
     
@@ -480,6 +637,14 @@ class PaymentProcessorController {
         }
     }
     
+    getRecurrenteFormData() {
+        return {
+            email: document.getElementById('recurrente-email')?.value || '',
+            name: document.getElementById('recurrente-name')?.value || '',
+            phone: document.getElementById('recurrente-phone')?.value || ''
+        };
+    }
+
     getStripeFormData() {
         return {
             cardNumber: document.getElementById('stripe-card-number')?.value || '',
@@ -489,7 +654,7 @@ class PaymentProcessorController {
             email: document.getElementById('stripe-email')?.value || ''
         };
     }
-    
+
     getPayPalFormData() {
         return {
             email: document.getElementById('paypal-email')?.value || ''
@@ -507,6 +672,8 @@ class PaymentProcessorController {
     
     validatePaymentData(gatewayType) {
         switch (gatewayType) {
+            case 'recurrente':
+                return this.validateRecurrenteData();
             case 'stripe':
                 return this.validateStripeData();
             case 'paypal':
@@ -516,6 +683,21 @@ class PaymentProcessorController {
             default:
                 return { valid: false, errors: ['Gateway no soportado'] };
         }
+    }
+
+    validateRecurrenteData() {
+        const data = this.getRecurrenteFormData();
+        const errors = [];
+
+        if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+            errors.push('Email requerido y válido');
+        }
+
+        if (!data.name || data.name.trim().length < 3) {
+            errors.push('Nombre completo requerido (mínimo 3 caracteres)');
+        }
+
+        return { valid: errors.length === 0, errors };
     }
     
     validateStripeData() {

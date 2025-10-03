@@ -661,6 +661,207 @@ module.exports = (req, res) => {
         }
     }
 
+    // Recurrente Payment Gateway endpoints
+    if (endpoint === 'recurrente') {
+        // Create checkout session
+        if (method === 'POST' && subPaths[0] === 'create-session') {
+            try {
+                let body = '';
+                req.on('data', chunk => { body += chunk; });
+                req.on('end', async () => {
+                    try {
+                        const { products, amount, currency, customerEmail, customerName, metadata } = JSON.parse(body);
+
+                        // Get base URL for callbacks
+                        const baseUrl = req.headers.origin || 'http://localhost:3000';
+
+                        // Mock checkout session creation
+                        const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                        const mockSession = {
+                            id: sessionId,
+                            url: `${baseUrl}/checkout-redirect.html?session=${sessionId}`,
+                            amount: amount,
+                            currency: currency || 'GTQ',
+                            customer: { email: customerEmail, name: customerName },
+                            products: products,
+                            metadata: metadata,
+                            status: 'pending',
+                            created_at: new Date().toISOString(),
+                            expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString()
+                        };
+
+                        // Store session in memory (in production, use database)
+                        global.recurrenteSessions = global.recurrenteSessions || {};
+                        global.recurrenteSessions[sessionId] = mockSession;
+
+                        console.log('✅ Recurrente checkout session created:', sessionId);
+
+                        return res.json({
+                            success: true,
+                            data: {
+                                sessionId: mockSession.id,
+                                checkoutUrl: mockSession.url,
+                                expiresAt: mockSession.expires_at,
+                                publicKey: 'pk_test_uWS5SBTkEnhI1o8f0E1Lyzvfn89Qadqumwkj5e6Gk1BQ8rFNxUMe3IAnK'
+                            },
+                            message: 'Checkout session created successfully'
+                        });
+                    } catch (parseError) {
+                        return res.status(400).json({
+                            success: false,
+                            error: 'Invalid JSON payload'
+                        });
+                    }
+                });
+                return;
+            } catch (error) {
+                return res.status(500).json({
+                    success: false,
+                    error: 'Internal server error'
+                });
+            }
+        }
+
+        // Verify payment status
+        if (method === 'GET' && subPaths[0] === 'verify-payment') {
+            try {
+                const sessionId = subPaths[1];
+
+                if (!sessionId) {
+                    return res.status(400).json({
+                        success: false,
+                        error: 'Session ID is required'
+                    });
+                }
+
+                // Get session from memory
+                global.recurrenteSessions = global.recurrenteSessions || {};
+                const session = global.recurrenteSessions[sessionId];
+
+                if (!session) {
+                    return res.status(404).json({
+                        success: false,
+                        error: 'Session not found'
+                    });
+                }
+
+                // Simulate payment completion (in real implementation, this comes from webhook)
+                const isCompleted = session.status === 'completed';
+
+                return res.json({
+                    success: true,
+                    data: {
+                        sessionId: session.id,
+                        status: session.status,
+                        paymentStatus: isCompleted ? 'paid' : 'pending',
+                        amount: session.amount,
+                        currency: session.currency,
+                        customer: session.customer,
+                        metadata: session.metadata,
+                        paidAt: isCompleted ? new Date().toISOString() : null,
+                        createdAt: session.created_at
+                    }
+                });
+            } catch (error) {
+                return res.status(500).json({
+                    success: false,
+                    error: 'Error verifying payment'
+                });
+            }
+        }
+
+        // Complete payment (mock endpoint to simulate webhook)
+        if (method === 'POST' && subPaths[0] === 'complete-payment') {
+            try {
+                let body = '';
+                req.on('data', chunk => { body += chunk; });
+                req.on('end', () => {
+                    try {
+                        const { sessionId } = JSON.parse(body);
+
+                        global.recurrenteSessions = global.recurrenteSessions || {};
+                        const session = global.recurrenteSessions[sessionId];
+
+                        if (!session) {
+                            return res.status(404).json({
+                                success: false,
+                                error: 'Session not found'
+                            });
+                        }
+
+                        // Mark as completed
+                        session.status = 'completed';
+                        session.payment_status = 'paid';
+                        session.paid_at = new Date().toISOString();
+
+                        console.log('✅ Payment completed for session:', sessionId);
+
+                        return res.json({
+                            success: true,
+                            message: 'Payment completed successfully'
+                        });
+                    } catch (parseError) {
+                        return res.status(400).json({
+                            success: false,
+                            error: 'Invalid JSON payload'
+                        });
+                    }
+                });
+                return;
+            } catch (error) {
+                return res.status(500).json({
+                    success: false,
+                    error: 'Internal server error'
+                });
+            }
+        }
+
+        // Webhook endpoint
+        if (method === 'POST' && subPaths[0] === 'webhook') {
+            try {
+                let body = '';
+                req.on('data', chunk => { body += chunk; });
+                req.on('end', () => {
+                    try {
+                        const event = JSON.parse(body);
+
+                        console.log('📨 Recurrente webhook received:', event.type);
+
+                        // Process webhook event
+                        // In production, validate signature and process accordingly
+
+                        return res.json({
+                            success: true,
+                            message: 'Webhook received'
+                        });
+                    } catch (parseError) {
+                        return res.status(400).json({
+                            success: false,
+                            error: 'Invalid JSON payload'
+                        });
+                    }
+                });
+                return;
+            } catch (error) {
+                return res.status(500).json({
+                    success: false,
+                    error: 'Internal server error'
+                });
+            }
+        }
+
+        // Get public key
+        if (method === 'GET' && subPaths[0] === 'config') {
+            return res.json({
+                success: true,
+                data: {
+                    publicKey: 'pk_test_uWS5SBTkEnhI1o8f0E1Lyzvfn89Qadqumwkj5e6Gk1BQ8rFNxUMe3IAnK',
+                    mode: 'test'
+                }
+            });
+        }
+    }
+
     // 404 for other routes
     res.status(404).json({
         success: false,
@@ -681,7 +882,12 @@ module.exports = (req, res) => {
             'POST /api/google-auth/google-register',
             'POST /api/purchases/create-order',
             'POST /api/purchases/get-download-url',
-            'POST /api/purchases/check-access'
+            'POST /api/purchases/check-access',
+            'POST /api/recurrente/create-session',
+            'GET /api/recurrente/verify-payment/:sessionId',
+            'POST /api/recurrente/complete-payment',
+            'POST /api/recurrente/webhook',
+            'GET /api/recurrente/config'
         ]
     });
 };

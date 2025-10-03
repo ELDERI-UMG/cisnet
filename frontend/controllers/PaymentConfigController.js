@@ -1,6 +1,11 @@
 class PaymentConfigController {
     constructor() {
         this.paymentGateways = {
+            recurrente: {
+                name: 'Recurrente Guatemala',
+                enabled: false,
+                config: {}
+            },
             stripe: {
                 name: 'Stripe',
                 enabled: false,
@@ -17,7 +22,7 @@ class PaymentConfigController {
                 config: {}
             }
         };
-        
+
         this.generalSettings = {};
         this.init();
     }
@@ -308,10 +313,10 @@ class PaymentConfigController {
     
     async testNeonetConnection() {
         this.showLoadingState('neonet', true);
-        
+
         try {
             await this.delay(2200);
-            
+
             const config = this.paymentGateways.neonet.config;
             if (config.neonet_merchant_id && config.neonet_terminal_id && config.neonet_api_key) {
                 this.showMessage('✅ Conexión con Neonet Guatemala exitosa', 'success');
@@ -324,6 +329,36 @@ class PaymentConfigController {
             console.error('❌ Neonet test failed:', error);
         } finally {
             this.showLoadingState('neonet', false);
+        }
+    }
+
+    async testRecurrenteConnection() {
+        this.showLoadingState('recurrente', true);
+
+        try {
+            await this.delay(1500);
+
+            const config = this.paymentGateways.recurrente.config;
+            if (config.recurrente_public_key) {
+                // Test connection to Recurrente API
+                const apiUrl = `${window.API_CONFIG.baseUrl}/api/recurrente/config`;
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                if (data.success) {
+                    this.showMessage('✅ Conexión con Recurrente Guatemala exitosa', 'success');
+                    console.log('✅ Recurrente test successful');
+                } else {
+                    throw new Error('No se pudo conectar con Recurrente');
+                }
+            } else {
+                throw new Error('Falta la clave pública de Recurrente');
+            }
+        } catch (error) {
+            this.showMessage(`❌ Error conectando con Recurrente: ${error.message}`, 'error');
+            console.error('❌ Recurrente test failed:', error);
+        } finally {
+            this.showLoadingState('recurrente', false);
         }
     }
     
@@ -346,6 +381,15 @@ class PaymentConfigController {
             const config = gateway.config;
             
             switch (gatewayType) {
+                case 'recurrente':
+                    if (!config.recurrente_public_key) {
+                        errors.push('Recurrente: Falta la clave pública');
+                    }
+                    if (config.recurrente_mode === 'live' && !config.recurrente_webhook_secret) {
+                        warnings.push('Recurrente: Se recomienda configurar webhook secret en producción');
+                    }
+                    break;
+
                 case 'stripe':
                     if (!config.stripe_publishable_key || !config.stripe_secret_key) {
                         errors.push('Stripe: Faltan credenciales obligatorias');
@@ -567,6 +611,12 @@ window.testPayPalConnection = () => {
 window.testNeonetConnection = () => {
     if (window.paymentConfigController) {
         window.paymentConfigController.testNeonetConnection();
+    }
+};
+
+window.testRecurrenteConnection = () => {
+    if (window.paymentConfigController) {
+        window.paymentConfigController.testRecurrenteConnection();
     }
 };
 

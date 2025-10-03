@@ -5,8 +5,8 @@ let recurrenteService = null;
 
 function getRecurrenteService() {
     if (!recurrenteService) {
-        const RecurrenteService = require('../backend/services/RecurrenteService');
-        recurrenteService = new RecurrenteService();
+        // RecurrenteService is already exported as an instance
+        recurrenteService = require('../backend/services/RecurrenteService');
     }
     return recurrenteService;
 }

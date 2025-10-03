@@ -1,4 +1,9 @@
 // Vercel Serverless Function with Cart and Purchase Support
+const RecurrenteService = require('../backend/services/RecurrenteService');
+
+// Initialize Recurrente service
+const recurrenteService = new RecurrenteService();
+
 module.exports = (req, res) => {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -673,40 +678,45 @@ module.exports = (req, res) => {
                         const { products, amount, currency, customerEmail, customerName, metadata } = JSON.parse(body);
 
                         // Get base URL for callbacks
-                        const baseUrl = req.headers.origin || 'http://localhost:3000';
+                        const baseUrl = req.headers.origin || process.env.CORS_ORIGIN || 'https://cisnet.vercel.app';
 
-                        // Mock checkout session creation
-                        const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                        const mockSession = {
-                            id: sessionId,
-                            url: `${baseUrl}/checkout-redirect.html?session=${sessionId}`,
+                        // Create checkout session using Recurrente API
+                        const result = await recurrenteService.createCheckoutSession({
+                            products: products,
                             amount: amount,
                             currency: currency || 'GTQ',
-                            customer: { email: customerEmail, name: customerName },
-                            products: products,
-                            metadata: metadata,
-                            status: 'pending',
-                            created_at: new Date().toISOString(),
-                            expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString()
-                        };
+                            customerEmail: customerEmail,
+                            customerName: customerName,
+                            successUrl: `${baseUrl}/frontend/recurrente-callback.html`,
+                            cancelUrl: `${baseUrl}/frontend/views/cart/cart.html`,
+                            metadata: {
+                                ...metadata,
+                                source: 'cisnet_vercel',
+                                timestamp: new Date().toISOString()
+                            }
+                        });
 
-                        // Store session in memory (in production, use database)
-                        global.recurrenteSessions = global.recurrenteSessions || {};
-                        global.recurrenteSessions[sessionId] = mockSession;
+                        if (!result.success) {
+                            return res.status(400).json({
+                                success: false,
+                                error: result.error || 'Failed to create checkout session'
+                            });
+                        }
 
-                        console.log('✅ Recurrente checkout session created:', sessionId);
+                        console.log('✅ Recurrente checkout session created:', result.sessionId);
 
                         return res.json({
                             success: true,
                             data: {
-                                sessionId: mockSession.id,
-                                checkoutUrl: mockSession.url,
-                                expiresAt: mockSession.expires_at,
-                                publicKey: 'pk_test_uWS5SBTkEnhI1o8f0E1Lyzvfn89Qadqumwkj5e6Gk1BQ8rFNxUMe3IAnK'
+                                sessionId: result.sessionId,
+                                checkoutUrl: result.checkoutUrl,
+                                expiresAt: result.expiresAt,
+                                publicKey: result.publicKey
                             },
                             message: 'Checkout session created successfully'
                         });
                     } catch (parseError) {
+                        console.error('❌ Error parsing request:', parseError);
                         return res.status(400).json({
                             success: false,
                             error: 'Invalid JSON payload'
@@ -715,9 +725,10 @@ module.exports = (req, res) => {
                 });
                 return;
             } catch (error) {
+                console.error('❌ Error creating session:', error);
                 return res.status(500).json({
                     success: false,
-                    error: 'Internal server error'
+                    error: error.message || 'Internal server error'
                 });
             }
         }
@@ -734,38 +745,35 @@ module.exports = (req, res) => {
                     });
                 }
 
-                // Get session from memory
-                global.recurrenteSessions = global.recurrenteSessions || {};
-                const session = global.recurrenteSessions[sessionId];
+                // Verify payment using Recurrente API
+                const result = await recurrenteService.verifyPayment(sessionId);
 
-                if (!session) {
+                if (!result.success) {
                     return res.status(404).json({
                         success: false,
-                        error: 'Session not found'
+                        error: result.error || 'Payment verification failed'
                     });
                 }
-
-                // Simulate payment completion (in real implementation, this comes from webhook)
-                const isCompleted = session.status === 'completed';
 
                 return res.json({
                     success: true,
                     data: {
-                        sessionId: session.id,
-                        status: session.status,
-                        paymentStatus: isCompleted ? 'paid' : 'pending',
-                        amount: session.amount,
-                        currency: session.currency,
-                        customer: session.customer,
-                        metadata: session.metadata,
-                        paidAt: isCompleted ? new Date().toISOString() : null,
-                        createdAt: session.created_at
+                        sessionId: result.sessionId,
+                        status: result.status,
+                        paymentStatus: result.paymentStatus,
+                        amount: result.amount,
+                        currency: result.currency,
+                        customer: result.customer,
+                        metadata: result.metadata,
+                        paidAt: result.paidAt,
+                        createdAt: result.createdAt
                     }
                 });
             } catch (error) {
+                console.error('❌ Error verifying payment:', error);
                 return res.status(500).json({
                     success: false,
-                    error: 'Error verifying payment'
+                    error: error.message || 'Error verifying payment'
                 });
             }
         }

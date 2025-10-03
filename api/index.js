@@ -11,6 +11,22 @@ function getRecurrenteService() {
     return recurrenteService;
 }
 
+// Helper function to parse request body (works with Vercel)
+async function parseBody(req) {
+    return new Promise((resolve, reject) => {
+        let body = '';
+        req.on('data', chunk => { body += chunk.toString(); });
+        req.on('end', () => {
+            try {
+                resolve(JSON.parse(body));
+            } catch (error) {
+                reject(new Error('Invalid JSON'));
+            }
+        });
+        req.on('error', reject);
+    });
+}
+
 module.exports = (req, res) => {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -677,70 +693,60 @@ module.exports = (req, res) => {
     if (endpoint === 'recurrente') {
         // Create checkout session
         if (method === 'POST' && subPaths[0] === 'create-session') {
-            try {
-                let body = '';
-                req.on('data', chunk => { body += chunk; });
-                req.on('end', async () => {
-                    try {
-                        const { products, amount, currency, customerEmail, customerName, metadata } = JSON.parse(body);
+            (async () => {
+                try {
+                    const body = await parseBody(req);
+                    console.log('📦 Received create-session request:', body);
 
-                        // Get base URL for callbacks
-                        const baseUrl = req.headers.origin || process.env.CORS_ORIGIN || 'https://cisnet.vercel.app';
+                    const { products, amount, currency, customerEmail, customerName, metadata } = body;
 
-                        // Create checkout session using Recurrente API
-                        const result = await getRecurrenteService().createCheckoutSession({
-                            products: products,
-                            amount: amount,
-                            currency: currency || 'GTQ',
-                            customerEmail: customerEmail,
-                            customerName: customerName,
-                            successUrl: `${baseUrl}/frontend/recurrente-callback.html`,
-                            cancelUrl: `${baseUrl}/frontend/views/cart/cart.html`,
-                            metadata: {
-                                ...metadata,
-                                source: 'cisnet_vercel',
-                                timestamp: new Date().toISOString()
-                            }
-                        });
-
-                        if (!result.success) {
-                            return res.status(400).json({
-                                success: false,
-                                error: result.error || 'Failed to create checkout session'
-                            });
-                        }
-
-                        console.log('✅ Recurrente checkout session created:', result.sessionId);
-
-                        return res.json({
-                            success: true,
-                            data: {
-                                sessionId: result.sessionId,
-                                checkoutUrl: result.checkoutUrl,
-                                expiresAt: result.expiresAt,
-                                publicKey: result.publicKey
-                            },
-                            message: 'Checkout session created successfully'
-                        });
-                    } catch (parseError) {
-                        console.error('❌ Error parsing request:', parseError);
+                    if (!products || !amount || !customerEmail) {
                         return res.status(400).json({
                             success: false,
-                            error: 'Invalid JSON payload'
+                            error: 'Missing required fields: products, amount, customerEmail'
                         });
                     }
-                });
-                return;
-            } catch (error) {
-                console.error('❌ Error creating session:', error);
-                return res.status(500).json({
-                    success: false,
-                    error: error.message || 'Internal server error'
-                });
-            }
+
+                    // Create checkout session using Recurrente API
+                    const result = await getRecurrenteService().createCheckoutSession({
+                        products,
+                        amount,
+                        currency: currency || 'GTQ',
+                        customerEmail,
+                        customerName: customerName || 'Customer',
+                        successUrl: `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/recurrente-callback.html`,
+                        cancelUrl: `${process.env.CORS_ORIGIN || 'http://localhost:3000'}/checkout/payment.html`,
+                        metadata: metadata || {}
+                    });
+
+                    if (!result.success) {
+                        return res.status(400).json({
+                            success: false,
+                            error: result.error || 'Failed to create checkout session'
+                        });
+                    }
+
+                    console.log('✅ Checkout session created:', result.sessionId);
+
+                    return res.json({
+                        success: true,
+                        data: {
+                            sessionId: result.sessionId,
+                            checkoutUrl: result.checkoutUrl
+                        }
+                    });
+                } catch (error) {
+                    console.error('❌ Error creating checkout session:', error);
+                    return res.status(500).json({
+                        success: false,
+                        error: error.message || 'Error creating checkout session'
+                    });
+                }
+            })();
+            return;
         }
 
-        // Verify payment status
+        // Verify payment
         if (method === 'GET' && subPaths[0] === 'verify-payment') {
             (async () => {
                 try {
@@ -752,6 +758,8 @@ module.exports = (req, res) => {
                             error: 'Session ID is required'
                         });
                     }
+
+                    console.log('🔍 Verifying payment for session:', sessionId);
 
                     // Verify payment using Recurrente API
                     const result = await getRecurrenteService().verifyPayment(sessionId);

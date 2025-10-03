@@ -311,17 +311,24 @@ async function processCheckoutPayment() {
         
         // Process payment
         const result = await window.paymentProcessor.processPayment(cartData);
-        
+
+        // If redirecting (Recurrente), don't hide modal or show success
+        if (result.redirecting) {
+            console.log('🔄 Redirecting to payment gateway...');
+            // The redirect will happen in processRecurrentePayment
+            return;
+        }
+
         // Hide processing modal
         hidePaymentProcessingModal();
-        
+
         if (result.success) {
             // Process successful purchase
             processPurchaseSuccess(result);
-            
+
             // Show success modal
             showPaymentSuccessModal(result);
-            
+
             // Clear cart
             window.cartController.clearCart();
         }

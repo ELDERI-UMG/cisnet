@@ -3,8 +3,11 @@ class PaymentConfigController {
         this.paymentGateways = {
             recurrente: {
                 name: 'Recurrente Guatemala',
-                enabled: false,
-                config: {}
+                enabled: true,  // Enabled by default
+                config: {
+                    recurrente_public_key: 'pk_test_uWS5SBTkEnhI1o8f0E1Lyzvfn89Qadqumwkj5e6Gk1BQ8rFNxUMe3IAnK',
+                    recurrente_mode: 'test'
+                }
             },
             stripe: {
                 name: 'Stripe',
@@ -23,7 +26,10 @@ class PaymentConfigController {
             }
         };
 
-        this.generalSettings = {};
+        this.generalSettings = {
+            primary_currency: 'GTQ',
+            notification_email: 'admin@cisnet.com'
+        };
         this.init();
     }
     

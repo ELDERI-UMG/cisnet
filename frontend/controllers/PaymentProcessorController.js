@@ -171,9 +171,30 @@ class PaymentProcessorController {
         }
         
         form.style.display = 'block';
-        
+
+        // Setup form submit listener
+        this.setupFormSubmitListener(gatewayType);
+
         // Scroll to form
         form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    setupFormSubmitListener(gatewayType) {
+        const formId = `${gatewayType}-checkout-form`;
+        const form = document.getElementById(formId);
+
+        if (form && !form.dataset.listenerAttached) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                console.log(`📝 Form submitted for ${gatewayType}`);
+
+                // Trigger the payment processing
+                if (window.processCheckoutPayment) {
+                    window.processCheckoutPayment();
+                }
+            });
+            form.dataset.listenerAttached = 'true';
+        }
     }
     
     createGatewayForm(gatewayType) {

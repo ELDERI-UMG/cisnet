@@ -39,15 +39,21 @@ class ViewManager {
                 }
             } else {
                 // Try to load from file for other views
-                if (this.viewCache.has(viewPath)) {
-                    viewHTML = this.viewCache.get(viewPath);
+                // Add cache busting for payment checkout
+                const cacheKey = viewPath === 'checkout/payment' ? `${viewPath}?v=2` : viewPath;
+
+                if (this.viewCache.has(cacheKey)) {
+                    viewHTML = this.viewCache.get(cacheKey);
                 } else {
-                    const response = await fetch(`views/${viewPath}.html`);
+                    const fetchUrl = viewPath === 'checkout/payment'
+                        ? `views/${viewPath}.html?v=2`
+                        : `views/${viewPath}.html`;
+                    const response = await fetch(fetchUrl);
                     if (!response.ok) {
                         throw new Error(`Error loading view: ${viewPath}`);
                     }
                     viewHTML = await response.text();
-                    this.viewCache.set(viewPath, viewHTML);
+                    this.viewCache.set(cacheKey, viewHTML);
                 }
             }
 

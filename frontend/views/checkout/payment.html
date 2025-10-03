@@ -198,19 +198,23 @@
 
 <script>
 // Checkout page specific functions
-document.addEventListener('DOMContentLoaded', function() {
-    initializeCheckout();
-});
+// Initialize immediately when loaded (works with dynamic content)
+(function() {
+    console.log('🛒 Checkout payment view loaded');
+
+    // Small delay to ensure DOM is ready
+    setTimeout(initializeCheckout, 100);
+})();
 
 function initializeCheckout() {
     console.log('🛒 Initializing checkout page');
-    
+
     // Load order summary
     loadOrderSummary();
-    
+
     // Load payment methods
     loadPaymentMethods();
-    
+
     // Setup form formatting
     if (window.paymentProcessor) {
         window.paymentProcessor.setupFormFormatting();

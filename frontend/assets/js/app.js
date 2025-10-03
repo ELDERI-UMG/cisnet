@@ -7,12 +7,16 @@ class App {
         this.authController = new AuthController(this.user);
         this.productController = new ProductController(this.productModel, this.cartModel);
         this.cartController = new CartController(this.cartModel);
+        this.paymentConfigController = new PaymentConfigController();
+        this.paymentProcessor = new PaymentProcessorController();
         this.viewManager = window.viewManager; // Reference to the global viewManager
 
         // Hacer los controladores globalmente accesibles para ViewManager
         window.authController = this.authController;
         window.productController = this.productController;
         window.cartController = this.cartController;
+        window.paymentConfigController = this.paymentConfigController;
+        window.paymentProcessor = this.paymentProcessor;
 
         this.init();
     }

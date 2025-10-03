@@ -197,137 +197,14 @@ class CartController {
     }
 
     showPaymentForm() {
-        const items = this.cartModel.items;
-        const total = this.cartModel.total;
-        
-        if (!items || items.length === 0) {
-            this.showMessage('El carrito está vacío', 'error');
-            return;
+        // Redirigir a la página de checkout moderna con Recurrente
+        console.log('🛒 Redirecting to modern checkout with Recurrente');
+
+        if (window.viewManager) {
+            window.viewManager.loadView('checkout/payment');
+        } else {
+            console.error('❌ ViewManager not available');
         }
-
-        const mainContent = document.getElementById('main-content');
-        
-        const itemsList = items.map(item => `
-            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #eee;">
-                <span>${item.name} (x${item.quantity})</span>
-                <span>$${(item.price * item.quantity).toFixed(2)}</span>
-            </div>
-        `).join('');
-
-        mainContent.innerHTML = `
-            <div class="container">
-                <h2>💳 Checkout - Formulario de Pago</h2>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
-                    <!-- Resumen de la orden -->
-                    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border: 1px solid #dee2e6;">
-                        <h3 style="margin-top: 0;">📋 Resumen de la Orden</h3>
-                        <div style="margin-bottom: 1rem;">
-                            ${itemsList}
-                        </div>
-                        <div style="border-top: 2px solid #007bff; padding-top: 1rem; margin-top: 1rem;">
-                            <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold;">
-                                <span>Total a pagar:</span>
-                                <span style="color: #28a745;">$${total.toFixed(2)}</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Formulario de pago -->
-                    <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid #dee2e6;">
-                        <h3 style="margin-top: 0;">🏦 Información de Pago</h3>
-                        
-                        <form id="payment-form" style="display: flex; flex-direction: column; gap: 1rem;">
-                            <!-- Tipo de tarjeta -->
-                            <div class="form-group">
-                                <label for="card-type">Tipo de Tarjeta:</label>
-                                <select id="card-type" name="cardType" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;">
-                                    <option value="">Seleccionar tipo</option>
-                                    <option value="credit">💳 Tarjeta de Crédito</option>
-                                    <option value="debit">💰 Tarjeta de Débito</option>
-                                </select>
-                            </div>
-                            
-                            <!-- Número de tarjeta -->
-                            <div class="form-group">
-                                <label for="card-number">Número de Tarjeta:</label>
-                                <input type="text" id="card-number" name="cardNumber" 
-                                       placeholder="1234 5678 9012 3456" 
-                                       maxlength="19"
-                                       style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;">
-                            </div>
-                            
-                            <!-- Nombre del titular -->
-                            <div class="form-group">
-                                <label for="card-holder">Nombre del Titular:</label>
-                                <input type="text" id="card-holder" name="cardHolder" 
-                                       placeholder="Juan Pérez" 
-                                       style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;">
-                            </div>
-                            
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <!-- Fecha de expiración -->
-                                <div class="form-group">
-                                    <label for="expiry-date">Fecha de Expiración:</label>
-                                    <input type="text" id="expiry-date" name="expiryDate" 
-                                           placeholder="MM/AA" 
-                                           maxlength="5"
-                                           style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;">
-                                </div>
-                                
-                                <!-- CVV -->
-                                <div class="form-group">
-                                    <label for="cvv">CVV:</label>
-                                    <input type="text" id="cvv" name="cvv" 
-                                           placeholder="123" 
-                                           maxlength="4"
-                                           style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;">
-                                </div>
-                            </div>
-                            
-                            <!-- Dirección de facturación -->
-                            <div class="form-group">
-                                <label for="billing-address">Dirección de Facturación:</label>
-                                <textarea id="billing-address" name="billingAddress" 
-                                          placeholder="Calle, Ciudad, Código Postal, País"
-                                          rows="3"
-                                          style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; resize: vertical;"></textarea>
-                            </div>
-                            
-                            <!-- Términos y condiciones -->
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <input type="checkbox" id="terms" name="terms">
-                                <label for="terms" style="font-size: 0.9rem;">
-                                    Acepto los <a href="#" style="color: #007bff;">términos y condiciones</a> y la <a href="#" style="color: #007bff;">política de privacidad</a>
-                                </label>
-                            </div>
-                            
-                            <!-- Botones -->
-                            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                                <button type="button" onclick="window.viewManager.loadView('cart/cart')" 
-                                        class="btn" style="flex: 1;">
-                                    ← Volver al Carrito
-                                </button>
-                                <button type="submit" class="btn" 
-                                        style="flex: 2; background: linear-gradient(45deg, #28a745, #20c997); color: white; font-weight: 600;">
-                                    💳 Pagar $${total.toFixed(2)}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                
-                <!-- Información de seguridad -->
-                <div style="background: #e9ecef; padding: 1rem; border-radius: 8px; margin: 2rem 0; text-align: center;">
-                    <p style="margin: 0; font-size: 0.9rem; color: #6c757d;">
-                        🔒 <strong>Pago Seguro:</strong> Tu información está protegida con encriptación SSL de 256 bits. 
-                        No almacenamos información de tarjetas de crédito.
-                    </p>
-                </div>
-            </div>
-        `;
-        
-        this.attachPaymentFormEvents();
     }
 
     attachPaymentFormEvents() {

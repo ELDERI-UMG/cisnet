@@ -186,6 +186,7 @@
         </div>
     </div>
 
+    <script src="config/api-config.js"></script>
     <script src="config/supabase-config.js"></script>
     <script>
         // Get URL parameters
@@ -280,8 +281,16 @@
 
                 const cartData = JSON.parse(cartDataStr);
 
-                // Get current user from supabase
-                const { data: { user } } = await window.supabase.auth.getUser();
+                // Check if supabase is available and user is authenticated
+                let user = null;
+                try {
+                    if (window.supabase && window.supabase.auth) {
+                        const { data: { user: authUser } } = await window.supabase.auth.getUser();
+                        user = authUser;
+                    }
+                } catch (authError) {
+                    console.warn('⚠️ Could not get authenticated user:', authError);
+                }
 
                 if (user) {
                     console.log('💾 Saving purchase to database for user:', user.email);

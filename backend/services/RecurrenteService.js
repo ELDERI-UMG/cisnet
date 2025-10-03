@@ -5,8 +5,8 @@
  * Documentación: https://docs.recurrente.com/
  */
 
-require('dotenv').config();
 const crypto = require('crypto');
+const fetch = require('node-fetch');
 
 class RecurrenteService {
     constructor() {

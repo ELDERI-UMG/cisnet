@@ -564,6 +564,64 @@ class ViewManager {
                 }
             });
         });
+        
+        // Make processCheckoutPayment available globally
+        window.processCheckoutPayment = this.processCheckoutPayment.bind(this);
+    }
+    
+    async processCheckoutPayment() {
+        try {
+            console.log('🔐 Processing checkout payment...');
+            
+            if (!window.paymentProcessor || !window.paymentProcessor.selectedGateway) {
+                alert('Por favor selecciona un método de pago');
+                return;
+            }
+            
+            console.log('💳 Selected gateway:', window.paymentProcessor.selectedGateway);
+            
+            // Get cart data
+            const cart = window.cartController.getCart();
+            if (!cart || !cart.items || cart.items.length === 0) {
+                alert('Tu carrito está vacío');
+                return;
+            }
+            
+            const subtotal = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const taxes = subtotal * 0.12;
+            const total = subtotal + taxes;
+            
+            const cartData = {
+                items: cart.items,
+                subtotal: subtotal,
+                taxes: taxes,
+                total: total
+            };
+            
+            console.log('🛒 Cart data for payment:', cartData);
+            
+            // Process payment through PaymentProcessor
+            const result = await window.paymentProcessor.processPayment(cartData);
+            
+            console.log('✅ Payment result:', result);
+            
+            // If redirecting (Recurrente), the redirect will happen automatically
+            if (result.redirecting) {
+                console.log('🔄 Redirecting to payment gateway...');
+                return;
+            }
+            
+            // Handle other payment methods
+            if (result.success) {
+                alert('¡Pago exitoso! Gracias por tu compra.');
+                window.cartController.clearCart();
+                window.viewManager.loadView('products/list');
+            }
+            
+        } catch (error) {
+            console.error('❌ Payment processing error:', error);
+            alert('Error al procesar el pago: ' + error.message);
+        }
     }
 
     attachAboutEvents() {

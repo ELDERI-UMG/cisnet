@@ -1,8 +1,15 @@
 // Vercel Serverless Function with Cart and Purchase Support
-const RecurrenteService = require('../backend/services/RecurrenteService');
 
-// Initialize Recurrente service
-const recurrenteService = new RecurrenteService();
+// Lazy load RecurrenteService to avoid initialization errors
+let recurrenteService = null;
+
+function getRecurrenteService() {
+    if (!recurrenteService) {
+        const RecurrenteService = require('../backend/services/RecurrenteService');
+        recurrenteService = new RecurrenteService();
+    }
+    return recurrenteService;
+}
 
 module.exports = (req, res) => {
     // Enable CORS
@@ -681,7 +688,7 @@ module.exports = (req, res) => {
                         const baseUrl = req.headers.origin || process.env.CORS_ORIGIN || 'https://cisnet.vercel.app';
 
                         // Create checkout session using Recurrente API
-                        const result = await recurrenteService.createCheckoutSession({
+                        const result = await getRecurrenteService().createCheckoutSession({
                             products: products,
                             amount: amount,
                             currency: currency || 'GTQ',
@@ -746,7 +753,7 @@ module.exports = (req, res) => {
                 }
 
                 // Verify payment using Recurrente API
-                const result = await recurrenteService.verifyPayment(sessionId);
+                const result = await getRecurrenteService().verifyPayment(sessionId);
 
                 if (!result.success) {
                     return res.status(404).json({

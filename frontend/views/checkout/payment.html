@@ -208,6 +208,11 @@
 
 function initializeCheckout() {
     console.log('🛒 Initializing checkout page');
+    console.log('📊 Available controllers:', {
+        cartController: !!window.cartController,
+        paymentProcessor: !!window.paymentProcessor,
+        paymentConfigController: !!window.paymentConfigController
+    });
 
     // Load order summary
     loadOrderSummary();
@@ -222,21 +227,34 @@ function initializeCheckout() {
 }
 
 function loadOrderSummary() {
+    console.log('📦 Loading order summary...');
+
     if (!window.cartController) {
         console.error('❌ CartController not available');
+        const itemsContainer = document.getElementById('checkout-order-items');
+        if (itemsContainer) {
+            itemsContainer.innerHTML = '<p class="error">Error: No se pudo cargar el carrito</p>';
+        }
         return;
     }
-    
+
     const cart = window.cartController.getCart();
+    console.log('🛒 Cart data:', cart);
+
     const itemsContainer = document.getElementById('checkout-order-items');
     const subtotalEl = document.getElementById('checkout-subtotal');
     const taxesEl = document.getElementById('checkout-taxes');
     const totalEl = document.getElementById('checkout-total');
-    
+
     if (!cart || !cart.items || cart.items.length === 0) {
-        itemsContainer.innerHTML = '<p class="empty-cart">No hay productos en el carrito</p>';
+        console.warn('⚠️ Cart is empty');
+        if (itemsContainer) {
+            itemsContainer.innerHTML = '<p class="empty-cart">No hay productos en el carrito</p>';
+        }
         return;
     }
+
+    console.log(`✅ Found ${cart.items.length} items in cart`);
     
     let itemsHTML = '';
     let subtotal = 0;
@@ -266,22 +284,40 @@ function loadOrderSummary() {
 }
 
 function loadPaymentMethods() {
+    console.log('💳 Loading payment methods...');
     const container = document.getElementById('payment-methods-container');
-    
+
     if (!window.paymentProcessor) {
-        container.innerHTML = '<p class="error">Error: PaymentProcessor no está disponible</p>';
+        console.error('❌ PaymentProcessor not available');
+        if (container) {
+            container.innerHTML = '<p class="error">Error: PaymentProcessor no está disponible</p>';
+        }
         return;
     }
-    
+
+    console.log('✅ PaymentProcessor available');
+
     // Load active payment gateways
     window.paymentProcessor.loadActiveGateways();
-    
+    console.log('🔌 Active gateways:', window.paymentProcessor.activeGateways);
+
     // Generate payment options HTML
-    container.innerHTML = window.paymentProcessor.generatePaymentOptionsHTML();
-    
+    const html = window.paymentProcessor.generatePaymentOptionsHTML();
+    console.log('📝 Generated HTML length:', html.length);
+
+    if (container) {
+        container.innerHTML = html;
+    }
+
     // Show checkout actions if payment methods are available
-    if (window.paymentProcessor.activeGateways.length > 0) {
-        document.getElementById('checkout-actions').style.display = 'flex';
+    if (window.paymentProcessor.activeGateways && window.paymentProcessor.activeGateways.length > 0) {
+        const actionsEl = document.getElementById('checkout-actions');
+        if (actionsEl) {
+            actionsEl.style.display = 'flex';
+        }
+        console.log(`✅ Loaded ${window.paymentProcessor.activeGateways.length} payment methods`);
+    } else {
+        console.warn('⚠️ No active payment gateways found');
     }
 }
 

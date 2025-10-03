@@ -37,6 +37,13 @@ class PaymentConfigController {
         console.log('🔧 PaymentConfigController initialized');
         this.loadSavedConfiguration();
         this.setupEventListeners();
+
+        // Save default configuration if no configuration exists
+        const saved = localStorage.getItem('paymentConfiguration');
+        if (!saved) {
+            console.log('💾 Saving default payment configuration (Recurrente enabled)');
+            this.saveConfiguration();
+        }
     }
     
     loadPaymentConfig() {

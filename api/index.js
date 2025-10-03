@@ -742,47 +742,50 @@ module.exports = (req, res) => {
 
         // Verify payment status
         if (method === 'GET' && subPaths[0] === 'verify-payment') {
-            try {
-                const sessionId = subPaths[1];
+            (async () => {
+                try {
+                    const sessionId = subPaths[1];
 
-                if (!sessionId) {
-                    return res.status(400).json({
-                        success: false,
-                        error: 'Session ID is required'
-                    });
-                }
-
-                // Verify payment using Recurrente API
-                const result = await getRecurrenteService().verifyPayment(sessionId);
-
-                if (!result.success) {
-                    return res.status(404).json({
-                        success: false,
-                        error: result.error || 'Payment verification failed'
-                    });
-                }
-
-                return res.json({
-                    success: true,
-                    data: {
-                        sessionId: result.sessionId,
-                        status: result.status,
-                        paymentStatus: result.paymentStatus,
-                        amount: result.amount,
-                        currency: result.currency,
-                        customer: result.customer,
-                        metadata: result.metadata,
-                        paidAt: result.paidAt,
-                        createdAt: result.createdAt
+                    if (!sessionId) {
+                        return res.status(400).json({
+                            success: false,
+                            error: 'Session ID is required'
+                        });
                     }
-                });
-            } catch (error) {
-                console.error('❌ Error verifying payment:', error);
-                return res.status(500).json({
-                    success: false,
-                    error: error.message || 'Error verifying payment'
-                });
-            }
+
+                    // Verify payment using Recurrente API
+                    const result = await getRecurrenteService().verifyPayment(sessionId);
+
+                    if (!result.success) {
+                        return res.status(404).json({
+                            success: false,
+                            error: result.error || 'Payment verification failed'
+                        });
+                    }
+
+                    return res.json({
+                        success: true,
+                        data: {
+                            sessionId: result.sessionId,
+                            status: result.status,
+                            paymentStatus: result.paymentStatus,
+                            amount: result.amount,
+                            currency: result.currency,
+                            customer: result.customer,
+                            metadata: result.metadata,
+                            paidAt: result.paidAt,
+                            createdAt: result.createdAt
+                        }
+                    });
+                } catch (error) {
+                    console.error('❌ Error verifying payment:', error);
+                    return res.status(500).json({
+                        success: false,
+                        error: error.message || 'Error verifying payment'
+                    });
+                }
+            })();
+            return;
         }
 
         // Complete payment (mock endpoint to simulate webhook)

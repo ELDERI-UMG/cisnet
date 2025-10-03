@@ -269,7 +269,7 @@
             `;
         }
 
-        function processPurchase(paymentData) {
+        async function processPurchase(paymentData) {
             try {
                 // Get cart data from sessionStorage
                 const cartDataStr = sessionStorage.getItem('recurrente_cart_data');
@@ -280,7 +280,44 @@
 
                 const cartData = JSON.parse(cartDataStr);
 
-                // Mark products as purchased
+                // Get current user from supabase
+                const { data: { user } } = await window.supabase.auth.getUser();
+
+                if (user) {
+                    console.log('💾 Saving purchase to database for user:', user.email);
+
+                    // Save purchase to backend (Supabase)
+                    try {
+                        const baseUrl = window.API_CONFIG?.baseUrl || window.location.origin;
+                        const saveResponse = await fetch(`${baseUrl}/api/recurrente/save-purchase`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                sessionId: paymentData.sessionId,
+                                userEmail: user.email,
+                                cartData: cartData,
+                                paymentData: paymentData
+                            })
+                        });
+
+                        const saveResult = await saveResponse.json();
+
+                        if (saveResult.success) {
+                            console.log('✅ Purchase saved to database:', saveResult.purchaseId);
+                        } else {
+                            console.error('❌ Failed to save purchase:', saveResult.error);
+                        }
+                    } catch (dbError) {
+                        console.error('❌ Error saving to database:', dbError);
+                        // Continue with localStorage backup even if DB fails
+                    }
+                } else {
+                    console.warn('⚠️ No authenticated user found - saving to localStorage only');
+                }
+
+                // Mark products as purchased (localStorage backup)
                 let purchasedProducts = JSON.parse(localStorage.getItem('purchasedProducts') || '[]');
 
                 if (cartData.items) {

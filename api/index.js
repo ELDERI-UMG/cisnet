@@ -2,6 +2,7 @@
 
 // Lazy load RecurrenteService to avoid initialization errors
 let recurrenteService = null;
+let supabaseClient = null;
 
 function getRecurrenteService() {
     if (!recurrenteService) {
@@ -9,6 +10,13 @@ function getRecurrenteService() {
         recurrenteService = require('../backend/services/RecurrenteService');
     }
     return recurrenteService;
+}
+
+function getSupabaseClient() {
+    if (!supabaseClient) {
+        supabaseClient = require('../backend/src/shared/infrastructure/database/SupabaseClient');
+    }
+    return supabaseClient;
 }
 
 // Helper function to parse request body (works with Vercel)
@@ -650,42 +658,76 @@ module.exports = (req, res) => {
         }
 
         if (method === 'POST' && subPaths[0] === 'check-access') {
-            try {
-                let body = '';
-                req.on('data', chunk => { body += chunk; });
-                req.on('end', () => {
-                    try {
-                        const { productId } = JSON.parse(body);
-                        const product = products.find(p => p.id === String(productId));
+            (async () => {
+                try {
+                    const body = await parseBody(req);
+                    const { productId, userEmail } = body;
 
-                        if (!product) {
-                            return res.status(404).json({
-                                success: false,
-                                error: 'Product not found'
-                            });
-                        }
+                    if (!productId || !userEmail) {
+                        return res.status(400).json({
+                            success: false,
+                            error: 'Missing required fields: productId, userEmail'
+                        });
+                    }
 
-                        // For demo purposes, always return false (user should purchase first)
-                        // In production, this would check the database for user purchases
+                    console.log('🔍 Checking access for user:', userEmail, 'product:', productId);
+
+                    // Get Supabase client
+                    const supabase = getSupabaseClient();
+
+                    // Find user
+                    const { data: users, error: userError } = await supabase.select('users', '*', { email: userEmail });
+
+                    if (userError || !users || users.length === 0) {
+                        console.log('❌ User not found:', userEmail);
                         return res.json({
                             success: true,
                             hasAccess: false,
-                            message: 'Purchase required for access'
-                        });
-                    } catch (parseError) {
-                        return res.status(400).json({
-                            success: false,
-                            error: 'Invalid JSON payload'
+                            message: 'User not found'
                         });
                     }
-                });
-                return;
-            } catch (error) {
-                return res.status(500).json({
-                    success: false,
-                    error: 'Internal server error'
-                });
-            }
+
+                    const user = users[0];
+
+                    // Check if user has purchased this product
+                    const serviceClient = supabase.getServiceRoleClient();
+                    const { data: purchaseItems, error: purchaseError } = await serviceClient
+                        .from('purchase_items')
+                        .select(`
+                            *,
+                            purchases!inner(*)
+                        `)
+                        .eq('product_id', productId)
+                        .eq('purchases.user_id', user.id)
+                        .eq('purchases.payment_status', 'paid');
+
+                    if (purchaseError) {
+                        console.error('❌ Error checking purchase:', purchaseError);
+                        return res.status(500).json({
+                            success: false,
+                            error: 'Error checking purchase access'
+                        });
+                    }
+
+                    const hasAccess = purchaseItems && purchaseItems.length > 0;
+
+                    console.log(hasAccess ? '✅ Access granted' : '❌ Access denied');
+
+                    return res.json({
+                        success: true,
+                        hasAccess: hasAccess,
+                        message: hasAccess ? 'Access granted' : 'Purchase required for access'
+                    });
+
+                } catch (error) {
+                    console.error('❌ Error in check-access:', error);
+                    return res.status(500).json({
+                        success: false,
+                        error: error.message || 'Internal server error'
+                    });
+                }
+            })();
+            return;
         }
     }
 
@@ -874,6 +916,101 @@ module.exports = (req, res) => {
                     error: 'Internal server error'
                 });
             }
+        }
+
+        // Save purchase to database
+        if (method === 'POST' && subPaths[0] === 'save-purchase') {
+            (async () => {
+                try {
+                    const body = await parseBody(req);
+                    const { sessionId, userEmail, cartData, paymentData } = body;
+
+                    console.log('💾 Saving purchase to database:', { sessionId, userEmail });
+
+                    // Get Supabase client
+                    const supabase = getSupabaseClient();
+
+                    // Find user by email
+                    const { data: users, error: userError } = await supabase.select('users', '*', { email: userEmail });
+
+                    if (userError || !users || users.length === 0) {
+                        console.error('❌ User not found:', userEmail);
+                        return res.status(404).json({
+                            success: false,
+                            error: 'User not found'
+                        });
+                    }
+
+                    const user = users[0];
+                    console.log('👤 Found user:', user.id);
+
+                    // Calculate total amount
+                    const totalAmount = paymentData.amount || (cartData.total * 7.8); // Convert USD to GTQ
+
+                    // Create purchase record using service role client (bypasses RLS)
+                    const serviceClient = supabase.getServiceRoleClient();
+                    const { data: purchase, error: purchaseError } = await serviceClient
+                        .from('purchases')
+                        .insert({
+                            user_id: user.id,
+                            total_amount: totalAmount,
+                            payment_status: 'paid',
+                            payment_method: 'recurrente',
+                            transaction_id: sessionId
+                        })
+                        .select();
+
+                    if (purchaseError || !purchase || purchase.length === 0) {
+                        console.error('❌ Error creating purchase:', purchaseError);
+                        return res.status(500).json({
+                            success: false,
+                            error: 'Failed to create purchase record'
+                        });
+                    }
+
+                    const purchaseId = purchase[0].id;
+                    console.log('📦 Purchase created:', purchaseId);
+
+                    // Create purchase items
+                    if (cartData.items && cartData.items.length > 0) {
+                        const purchaseItems = cartData.items.map(item => ({
+                            purchase_id: purchaseId,
+                            product_id: item.product_id || item.id,
+                            quantity: item.quantity || 1,
+                            unit_price: item.price,
+                            total_price: item.price * (item.quantity || 1)
+                        }));
+
+                        const { error: itemsError } = await serviceClient
+                            .from('purchase_items')
+                            .insert(purchaseItems);
+
+                        if (itemsError) {
+                            console.error('❌ Error creating purchase items:', itemsError);
+                            return res.status(500).json({
+                                success: false,
+                                error: 'Failed to create purchase items'
+                            });
+                        }
+
+                        console.log('✅ Purchase items created:', purchaseItems.length);
+                    }
+
+                    return res.json({
+                        success: true,
+                        message: 'Purchase saved successfully',
+                        purchaseId: purchaseId
+                    });
+
+                } catch (error) {
+                    console.error('❌ Error in save-purchase:', error);
+                    return res.status(500).json({
+                        success: false,
+                        error: error.message || 'Internal server error'
+                    });
+                }
+            })();
+            return;
         }
 
         // Get public key

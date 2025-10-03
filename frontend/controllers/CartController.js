@@ -196,17 +196,6 @@ class CartController {
         }, 3000);
     }
 
-    showPaymentForm() {
-        // Redirigir a la página de checkout moderna con Recurrente
-        console.log('🛒 Redirecting to modern checkout with Recurrente');
-
-        if (window.viewManager) {
-            window.viewManager.loadView('checkout/payment');
-        } else {
-            console.error('❌ ViewManager not available');
-        }
-    }
-
     attachPaymentFormEvents() {
         const form = document.getElementById('payment-form');
         const cardNumberInput = document.getElementById('card-number');

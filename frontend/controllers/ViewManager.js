@@ -37,13 +37,6 @@ class ViewManager {
                 } else {
                     throw new Error('CartController not available');
                 }
-            } else if (viewPath === 'checkout/payment') {
-                if (window.cartController) {
-                    window.cartController.showPaymentForm();
-                    return true;
-                } else {
-                    throw new Error('CartController not available');
-                }
             } else {
                 // Try to load from file for other views
                 if (this.viewCache.has(viewPath)) {
